@@ -5,7 +5,7 @@
 		<div class="max-w-[1550px] mx-auto px-6">
 			<!-- Section Header -->
 			<div class="text-center mb-12">
-				<Badge variant="secondary" class="mb-6"> Why Use The Commons? </Badge>
+				<Badge variant="secondary" class="mb-6"> Why Use Circa? </Badge>
 				<h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-6">
 					Your trusted campus community
 				</h2>
