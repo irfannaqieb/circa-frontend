@@ -9,10 +9,10 @@
 						Get started with our simple and intuitive process
 					</h2>
 					<p class="text-lg text-slate-600 mb-8 leading-relaxed">
-						Join thousands of community members who are already sharing,
-						lending, and borrowing items. Build meaningful connections while
-						saving money and reducing waste. Our platform makes it safe, simple,
-						and rewarding to participate in the sharing economy.
+						Join other members who are already sharing, lending, and borrowing
+						items. Build meaningful connections while saving money and reducing
+						waste. Our platform makes it safe, simple, and rewarding to
+						participate in the sharing economy.
 					</p>
 					<Button
 						class="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
