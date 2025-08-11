@@ -1,5 +1,5 @@
 <template>
-	<nav class="m-4 mb-0 bg-slate-50 rounded-t-xl px-4 py-3">
+	<nav class="m-4 mb-0 rounded-t-xl px-4 py-3">
 		<div class="max-w-7xl mx-auto flex items-center justify-between">
 			<!-- Left side - Logo and brand name -->
 			<div class="flex items-center space-x-3">
@@ -20,6 +20,12 @@
 					Home
 				</NuxtLink>
 				<NuxtLink
+					to="/marketplace"
+					class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+				>
+					Marketplace
+				</NuxtLink>
+				<!-- <NuxtLink
 					to="/about"
 					class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
 				>
@@ -30,7 +36,7 @@
 					class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
 				>
 					Contact
-				</NuxtLink>
+				</NuxtLink> -->
 			</div>
 
 			<!-- Right side - Action buttons -->

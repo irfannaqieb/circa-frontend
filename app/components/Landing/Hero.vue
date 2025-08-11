@@ -1,6 +1,6 @@
 <template>
 	<div
-		class="text-center py-16 md:py-24 bg-gradient-to-br from-slate-50 to-slate-100 m-4 mt-0 rounded-b-xl"
+		class="text-center py-16 md:py-24 bg-gradient-to-br from-slate-50 to-slate-100 mt-4 rounded-4xl"
 	>
 		<h1 class="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
 			Your Home's Treasure Chest

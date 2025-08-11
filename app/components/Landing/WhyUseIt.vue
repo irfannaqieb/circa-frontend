@@ -1,6 +1,6 @@
 <template>
 	<div
-		class="py-16 md:py-24 bg-gradient-to-br from-slate-50 to-slate-100 m-4 rounded-xl"
+		class="py-16 md:py-24 bg-gradient-to-br from-slate-50 to-slate-100 my-4 rounded-4xl"
 	>
 		<div class="max-w-[1550px] mx-auto px-6">
 			<!-- Section Header -->
