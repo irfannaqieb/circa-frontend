@@ -1,0 +1,112 @@
+import { defineStore } from "pinia";
+import type { Session, User, Subscription } from "@supabase/supabase-js";
+
+type AuthSubscription = Subscription | null;
+
+interface SessionState {
+	user: User | null;
+	session: Session | null;
+	loading: boolean;
+	error: string | null;
+	_subscribed: boolean;
+	_authSub: AuthSubscription;
+}
+
+export const useSessionStore = defineStore("session", {
+	state: (): SessionState => ({
+		user: null,
+		session: null,
+		loading: false,
+		error: null,
+		_subscribed: false,
+		_authSub: null,
+	}),
+	getters: {
+		isAuthenticated: (state) => Boolean(state.user),
+	},
+	actions: {
+		async initialize() {
+			if (this._subscribed) return;
+			const { $supabase } = useNuxtApp();
+			// Load current session once
+			this.loading = true;
+			try {
+				const { data, error } = await $supabase.auth.getSession();
+				if (error) throw error;
+				this.session = data.session;
+				this.user = data.session?.user ?? null;
+			} catch (err: any) {
+				this.error = err?.message ?? "Failed to load session";
+			} finally {
+				this.loading = false;
+			}
+
+			// Subscribe to auth changes (client only)
+			if (process.client && !this._subscribed) {
+				const {
+					data: { subscription },
+				} = $supabase.auth.onAuthStateChange((_event, session) => {
+					this.session = session;
+					this.user = session?.user ?? null;
+				});
+				this._authSub = subscription;
+				this._subscribed = true;
+			}
+		},
+
+		async refresh() {
+			const { $supabase } = useNuxtApp();
+			this.loading = true;
+			try {
+				const { data, error } = await $supabase.auth.getSession();
+				if (error) throw error;
+				this.session = data.session;
+				this.user = data.session?.user ?? null;
+			} catch (err: any) {
+				this.error = err?.message ?? "Failed to refresh session";
+			} finally {
+				this.loading = false;
+			}
+		},
+
+		async loginWithEmail(email: string, redirectTo?: string) {
+			const { $supabase } = useNuxtApp();
+			this.loading = true;
+			this.error = null;
+			try {
+				const callback =
+					redirectTo ||
+					(process.client
+						? `${window.location.origin}/auth/callback`
+						: undefined);
+				const { error } = await $supabase.auth.signInWithOtp({
+					email,
+					options: { emailRedirectTo: callback },
+				});
+				if (error) throw error;
+				return { ok: true as const };
+			} catch (err: any) {
+				this.error = err?.message ?? "Login failed";
+				return { ok: false as const, error: this.error };
+			} finally {
+				this.loading = false;
+			}
+		},
+
+		async logout() {
+			const { $supabase } = useNuxtApp();
+			this.loading = true;
+			this.error = null;
+			try {
+				const { error } = await $supabase.auth.signOut();
+				if (error) throw error;
+				this.session = null;
+				this.user = null;
+			} catch (err: any) {
+				this.error = err?.message ?? "Logout failed";
+			} finally {
+				this.loading = false;
+			}
+		},
+	},
+});
