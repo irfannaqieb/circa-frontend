@@ -4,7 +4,7 @@ export default defineNuxtConfig({
 	compatibilityDate: "2025-07-15",
 	devtools: { enabled: true },
 	css: ["~/assets/css/main.css"],
-	modules: ["shadcn-nuxt", "@nuxtjs/google-fonts"],
+	modules: ["shadcn-nuxt", "@nuxtjs/google-fonts", "@pinia/nuxt"],
 	runtimeConfig: {
 		public: {
 			supabaseUrl: process.env.SUPABASE_URL,
