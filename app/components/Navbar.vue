@@ -42,7 +42,21 @@
 			<!-- Right side - Action buttons -->
 			<div class="flex items-center space-x-4">
 				<Button variant="outline" size="sm"> Become a seller </Button>
-				<Button size="sm"> Sign in </Button>
+				<template v-if="!session.isAuthenticated">
+					<Button size="sm" :disabled="session.loading" @click="openLoginModal">
+						{{ session.loading ? "Signing in…" : "Sign in" }}
+					</Button>
+				</template>
+				<template v-else>
+					<Button
+						size="sm"
+						variant="secondary"
+						:disabled="session.loading"
+						@click="handleLogout"
+					>
+						{{ session.loading ? "Signing out…" : "Sign out" }}
+					</Button>
+				</template>
 			</div>
 
 			<!-- Mobile menu button -->
@@ -90,20 +104,65 @@
 					<Button variant="outline" size="sm" class="w-full">
 						Become a seller
 					</Button>
-					<Button size="sm" class="w-full"> Sign in </Button>
+					<template v-if="!session.isAuthenticated">
+						<Button
+							size="sm"
+							class="w-full"
+							:disabled="session.loading"
+							@click="openLoginModal"
+						>
+							{{ session.loading ? "Signing in…" : "Sign in" }}
+						</Button>
+					</template>
+					<template v-else>
+						<Button
+							size="sm"
+							variant="secondary"
+							class="w-full"
+							:disabled="session.loading"
+							@click="handleLogout"
+						>
+							{{ session.loading ? "Signing out…" : "Sign out" }}
+						</Button>
+					</template>
 				</div>
 			</div>
 		</div>
+
+		<ModalLogin
+			:open="isLoginModalOpen"
+			@update:open="isLoginModalOpen = $event"
+			@success="onLoginSuccess"
+		/>
 	</nav>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Button from "~/components/ui/button/Button.vue";
+import { useSessionStore } from "@/stores/session.store";
 
 const isMobileMenuOpen = ref(false);
+const isLoginModalOpen = ref(false);
 
 const toggleMobileMenu = () => {
 	isMobileMenuOpen.value = !isMobileMenuOpen.value;
+};
+
+const openLoginModal = () => {
+	isLoginModalOpen.value = true;
+};
+
+const onLoginSuccess = () => {
+	console.log("Login successful");
+};
+
+const session = useSessionStore();
+onMounted(() => {
+	session.initialize();
+});
+
+const handleLogout = async () => {
+	await session.logout();
 };
 </script>
