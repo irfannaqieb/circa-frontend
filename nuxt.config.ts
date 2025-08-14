@@ -27,7 +27,7 @@ export default defineNuxtConfig({
 	},
 	googleFonts: {
 		families: {
-			Urbanist: [400, 500, 600, 700, 800], // choose weights you need
+			Urbanist: [400, 500, 600, 700, 800],
 		},
 		display: "swap", // prevents layout shifts
 		preconnect: true, // faster load
