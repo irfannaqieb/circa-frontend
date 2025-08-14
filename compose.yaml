@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  nuxt:
+    build:
+      context: .
+      target: dev          # Use development stage for hot reload support
+    working_dir: /app
+    volumes:
+      - .:/app             # Bind mount local source for real-time syncing
+      - /app/node_modules  # Prevents node_modules conflicts between host & container
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+    command: ["npm", "run", "dev"]
+
+
+
