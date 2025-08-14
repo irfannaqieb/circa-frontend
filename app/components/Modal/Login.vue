@@ -86,6 +86,7 @@
 							type="button"
 							variant="outline"
 							class="w-full"
+							:disabled="isSubmitting || isOauthRedirecting"
 							@click="onOAuth('google')"
 						>
 							<svg class="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -106,7 +107,11 @@
 									fill="#EA4335"
 								/>
 							</svg>
-							Continue with Google
+							{{
+								isOauthRedirecting
+									? "Redirecting to Google..."
+									: "Continue with Google"
+							}}
 						</Button>
 					</div>
 				</DialogFooter>
@@ -159,6 +164,7 @@ const isOpen = ref(props.open);
 const session = useSessionStore();
 
 const isSignUp = ref(false);
+const isOauthRedirecting = ref(false);
 
 const schema = toTypedSchema(
 	z.object({
@@ -222,13 +228,26 @@ const onSubmit = async (values: any) => {
 };
 
 const onOAuth = async (provider: "google" | "github") => {
+	isOauthRedirecting.value = true;
 	try {
-		await session.signInWithProvider(provider);
-	} catch (error) {
-		console.error("OAuth error:", error);
-		if (process.client) {
-			alert("OAuth sign-in failed");
+		const result = await session.signInWithProvider(provider);
+		if (!result?.ok) {
+			console.error("OAuth sign-in initiation failed", {
+				provider,
+				error: (result as any)?.error,
+			});
+			if (process.client) {
+				alert("Unable to start OAuth sign-in, please try again");
+			}
+			isOauthRedirecting.value = false;
 		}
+		// On success, a redirect is likely to occur; keep redirecting state true.
+	} catch (error) {
+		console.error("OAuth sign-in initiation threw", { provider, error });
+		if (process.client) {
+			alert("Unable to start OAuth sign-in, please try again");
+		}
+		isOauthRedirecting.value = false;
 	}
 };
 </script>
