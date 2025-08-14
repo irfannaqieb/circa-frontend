@@ -4,7 +4,7 @@
 			<DialogHeader>
 				<DialogTitle>Sign in to Circa</DialogTitle>
 				<DialogDescription>
-					Enter your email to receive a magic link and sign in to your account.
+					Sign in or create an account with email and password, or use Google.
 				</DialogDescription>
 			</DialogHeader>
 
@@ -28,10 +28,46 @@
 					</FormItem>
 				</FormField>
 
+				<FormField v-slot="{ componentField }" name="password">
+					<FormItem>
+						<div class="flex items-center justify-between">
+							<FormLabel>Password</FormLabel>
+							<button
+								type="button"
+								class="text-xs underline"
+								@click="toggleMode"
+							>
+								{{
+									isSignUp
+										? "Have an account? Sign in"
+										: "Don't have an account? Sign up"
+								}}
+							</button>
+						</div>
+						<FormControl>
+							<Input
+								type="password"
+								placeholder="Enter your password"
+								v-bind="componentField"
+								:disabled="isSubmitting"
+							/>
+						</FormControl>
+						<FormMessage />
+					</FormItem>
+				</FormField>
+
 				<DialogFooter class="mt-6">
 					<div class="w-full space-y-3">
 						<Button type="submit" class="w-full" :disabled="isSubmitting">
-							{{ isSubmitting ? "Sending magic link..." : "Send magic link" }}
+							{{
+								isSubmitting
+									? isSignUp
+										? "Creating account..."
+										: "Signing in..."
+									: isSignUp
+									? "Create account"
+									: "Sign in"
+							}}
 						</Button>
 
 						<!-- Placeholder for future Google sign-in -->
@@ -46,7 +82,12 @@
 							</div>
 						</div>
 
-						<Button type="button" variant="outline" class="w-full" disabled>
+						<Button
+							type="button"
+							variant="outline"
+							class="w-full"
+							@click="onOAuth('google')"
+						>
 							<svg class="mr-2 h-4 w-4" viewBox="0 0 24 24">
 								<path
 									d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -65,7 +106,7 @@
 									fill="#EA4335"
 								/>
 							</svg>
-							Continue with Google (Coming Soon)
+							Continue with Google
 						</Button>
 					</div>
 				</DialogFooter>
@@ -117,12 +158,15 @@ const emit = defineEmits<Emits>();
 const isOpen = ref(props.open);
 const session = useSessionStore();
 
+const isSignUp = ref(false);
+
 const schema = toTypedSchema(
 	z.object({
 		email: z
 			.string()
 			.min(1, "Email is required")
 			.email("Please enter a valid email address"),
+		password: z.string().min(6, "Password must be at least 6 characters"),
 	})
 );
 
@@ -141,27 +185,49 @@ const updateOpen = (open: boolean) => {
 };
 
 // Handle form submission
+const toggleMode = () => {
+	isSignUp.value = !isSignUp.value;
+};
+
 const onSubmit = async (values: any) => {
 	try {
-		const result = await session.loginWithEmail(values.email);
+		const result = isSignUp.value
+			? await session.signUpWithPassword(values.email, values.password)
+			: await session.signInWithPassword(values.email, values.password);
 
 		if (result.ok) {
-			// Success feedback - can be replaced with toast notification later
 			if (process.client) {
-				alert("Magic link sent! Check your email to sign in.");
+				alert(
+					isSignUp.value
+						? "Account created. Check your email to confirm if required."
+						: "Signed in successfully."
+				);
 			}
 			updateOpen(false);
 			emit("success");
 		} else {
-			// Error feedback - can be replaced with toast notification later
 			if (process.client) {
-				alert(session.error || "Failed to send magic link");
+				alert(
+					session.error ||
+						(isSignUp.value ? "Failed to create account" : "Failed to sign in")
+				);
 			}
 		}
 	} catch (error) {
-		console.error("Login error:", error);
+		console.error("Auth error:", error);
 		if (process.client) {
 			alert("An unexpected error occurred");
+		}
+	}
+};
+
+const onOAuth = async (provider: "google" | "github") => {
+	try {
+		await session.signInWithProvider(provider);
+	} catch (error) {
+		console.error("OAuth error:", error);
+		if (process.client) {
+			alert("OAuth sign-in failed");
 		}
 	}
 };

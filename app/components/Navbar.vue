@@ -141,6 +141,7 @@
 import { ref, onMounted } from "vue";
 import Button from "~/components/ui/button/Button.vue";
 import { useSessionStore } from "@/stores/session.store";
+const route = useRoute();
 
 const isMobileMenuOpen = ref(false);
 const isLoginModalOpen = ref(false);
@@ -155,11 +156,16 @@ const openLoginModal = () => {
 
 const onLoginSuccess = () => {
 	console.log("Login successful");
+	const redirect = route.query.redirect;
+	if (redirect) navigateTo(redirect);
 };
 
 const session = useSessionStore();
 onMounted(() => {
 	session.initialize();
+	if (route.query.login === "1") {
+		isLoginModalOpen.value = true;
+	}
 });
 
 const handleLogout = async () => {

@@ -69,7 +69,32 @@ export const useSessionStore = defineStore("session", {
 			}
 		},
 
-		async loginWithEmail(email: string, redirectTo?: string) {
+		async signInWithPassword(email: string, password: string) {
+			const { $supabase } = useNuxtApp();
+			this.loading = true;
+			this.error = null;
+			try {
+				const { data, error } = await $supabase.auth.signInWithPassword({
+					email,
+					password,
+				});
+				if (error) throw error;
+				this.session = data.session ?? null;
+				this.user = data.user ?? null;
+				return { ok: true as const };
+			} catch (err: any) {
+				this.error = err?.message ?? "Sign in failed";
+				return { ok: false as const, error: this.error };
+			} finally {
+				this.loading = false;
+			}
+		},
+
+		async signUpWithPassword(
+			email: string,
+			password: string,
+			redirectTo?: string
+		) {
 			const { $supabase } = useNuxtApp();
 			this.loading = true;
 			this.error = null;
@@ -79,14 +104,44 @@ export const useSessionStore = defineStore("session", {
 					(process.client
 						? `${window.location.origin}/auth/callback`
 						: undefined);
-				const { error } = await $supabase.auth.signInWithOtp({
+				const { data, error } = await $supabase.auth.signUp({
 					email,
+					password,
 					options: { emailRedirectTo: callback },
+				});
+				if (error) throw error;
+				this.session = data.session ?? null;
+				this.user = data.user ?? null;
+				return { ok: true as const };
+			} catch (err: any) {
+				this.error = err?.message ?? "Sign up failed";
+				return { ok: false as const, error: this.error };
+			} finally {
+				this.loading = false;
+			}
+		},
+
+		async signInWithProvider(
+			provider: "google" | "github",
+			redirectTo?: string
+		) {
+			const { $supabase } = useNuxtApp();
+			this.loading = true;
+			this.error = null;
+			try {
+				const callback =
+					redirectTo ||
+					(process.client
+						? `${window.location.origin}/auth/callback`
+						: undefined);
+				const { error } = await $supabase.auth.signInWithOAuth({
+					provider,
+					options: { redirectTo: callback },
 				});
 				if (error) throw error;
 				return { ok: true as const };
 			} catch (err: any) {
-				this.error = err?.message ?? "Login failed";
+				this.error = err?.message ?? "OAuth sign-in failed";
 				return { ok: false as const, error: this.error };
 			} finally {
 				this.loading = false;
