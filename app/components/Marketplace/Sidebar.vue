@@ -1,5 +1,77 @@
 <template>
-	<div>
-		<h1>Sidenavbar</h1>
+	<div class="w-64 p-4 border-r flex flex-col">
+		<div class="flex items-center space-x-3 mb-6">
+			<div
+				class="w-10 h-10 bg-black rounded-full flex items-center justify-center"
+			>
+				<span class="text-white font-bold text-lg">c.</span>
+			</div>
+			<span class="text-xl font-bold text-gray-900">circa</span>
+		</div>
+
+		<ProfileDropdown />
+
+		<h1 class="text-lg font-semibold text-gray-500 mt-6 mb-2">Marketplace</h1>
+		<ul>
+			<li class="mt-2">
+				<a
+					href="#"
+					class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
+				>
+					<List class="w-5 h-5 mr-3" />
+					<span>My Listings</span>
+				</a>
+			</li>
+			<li class="mt-2">
+				<a
+					href="#"
+					class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
+				>
+					<MessageSquare class="w-5 h-5 mr-3" />
+					<span>Messages</span>
+				</a>
+			</li>
+		</ul>
+
+		<Separator class="my-2" />
+
+		<h1 class="text-lg font-semibold text-gray-500 mt-2 mb-2">Categories</h1>
+		<ul>
+			<li v-for="category in categories" :key="category.name" class="mt-2">
+				<a
+					href="#"
+					class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
+				>
+					<component :is="category.icon" class="w-5 h-5 mr-3" />
+					<span>{{ category.name }}</span>
+				</a>
+			</li>
+		</ul>
 	</div>
 </template>
+
+<script setup lang="ts">
+import {
+	Smartphone,
+	Watch,
+	Shirt,
+	Backpack,
+	Home,
+	Book,
+	Car,
+	List,
+	MessageSquare,
+} from "lucide-vue-next";
+
+import { Separator } from "~/components/ui/separator";
+
+const categories = [
+	{ name: "Electronics & Gadgets", icon: Smartphone },
+	{ name: "Clothing & Accessories", icon: Shirt },
+	{ name: "Sports & Outdoor", icon: Backpack },
+	{ name: "Home & Garden", icon: Home },
+	{ name: "Toys & Games", icon: Watch },
+	{ name: "Books & Magazines", icon: Book },
+	{ name: "Cars & Motorcycles", icon: Car },
+];
+</script>
