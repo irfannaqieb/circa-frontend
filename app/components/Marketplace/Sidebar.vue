@@ -1,5 +1,5 @@
 <template>
-	<div class="w-64 p-4 border-r flex flex-col">
+	<div class="w-64 p-4 border-r flex flex-col sticky top-0 h-screen">
 		<div class="flex items-center space-x-3 mb-6">
 			<div
 				class="w-10 h-10 bg-black rounded-full flex items-center justify-center"
@@ -46,7 +46,31 @@
 					<span>{{ category.name }}</span>
 				</a>
 			</li>
+			<li class="mt-2">
+				<a
+					href="#"
+					class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
+				>
+					<Ellipsis class="w-5 h-5 mr-3" />
+					<span>Show all categories</span>
+				</a>
+			</li>
 		</ul>
+
+		<div class="mt-auto">
+			<Separator class="my-2" />
+			<ul>
+				<li class="mt-2">
+					<NuxtLink
+						to="/support"
+						class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
+					>
+						<LifeBuoy class="w-5 h-5 mr-3" />
+						<span>Help & Support</span>
+					</NuxtLink>
+				</li>
+			</ul>
+		</div>
 	</div>
 </template>
 
@@ -61,6 +85,8 @@ import {
 	Car,
 	List,
 	MessageSquare,
+	Ellipsis,
+	LifeBuoy,
 } from "lucide-vue-next";
 
 import { Separator } from "~/components/ui/separator";

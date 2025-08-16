@@ -1,11 +1,11 @@
 <template>
 	<div class="flex">
 		<MarketplaceSidebar />
-		<main class="flex-1 p-4">
-			<slot />
+		<main class="flex-1 px-14 pt-28">
+			<div>
+				<slot />
+			</div>
 		</main>
 	</div>
 </template>
-<script setup lang="ts">
-import MarketplaceSidebar from "~/components/Marketplace/Sidebar.vue";
-</script>
+<script setup lang="ts"></script>
