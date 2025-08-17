@@ -2,23 +2,26 @@
 	<Card class="overflow-hidden max-w-sm gap-4">
 		<CardContent class="p-0">
 			<img
-				src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=2899&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-				alt="watch"
+				:src="
+					image ||
+					'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=2899&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+				"
+				:alt="title || 'Product image'"
 				class="h-48 w-full object-cover"
 			/>
 		</CardContent>
 		<CardHeader>
 			<div class="flex justify-between">
 				<div>
-					<CardTitle>Apple Watch</CardTitle>
-					<p class="text-xs text-gray-500">6 months ago</p>
+					<CardTitle>{{ title || "Apple Watch" }}</CardTitle>
+					<p class="text-xs text-gray-500">{{ timeAgo || "6 months ago" }}</p>
 				</div>
 				<BadgeItemStatus :status="status" />
 			</div>
-			<p class="text-lg font-semibold">$500</p>
+			<p class="text-lg font-semibold">{{ price || "$500" }}</p>
 			<div class="flex items-center text-sm text-gray-500">
 				<MapPin class="mr-1 h-4 w-4" />
-				<span>New York, NY</span>
+				<span>{{ location || "New York, NY" }}</span>
 			</div>
 		</CardHeader>
 		<CardContent>
@@ -56,6 +59,26 @@ const props = defineProps({
 	status: {
 		type: String,
 		default: "Available",
+	},
+	title: {
+		type: String,
+		default: "Apple Watch",
+	},
+	price: {
+		type: String,
+		default: "$500",
+	},
+	location: {
+		type: String,
+		default: "New York, NY",
+	},
+	image: {
+		type: String,
+		default: "",
+	},
+	timeAgo: {
+		type: String,
+		default: "6 months ago",
 	},
 });
 </script>

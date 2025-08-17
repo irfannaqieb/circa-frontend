@@ -38,22 +38,22 @@
 		<h1 class="text-lg font-semibold text-gray-500 mt-2 mb-2">Categories</h1>
 		<ul>
 			<li v-for="category in categories" :key="category.name" class="mt-2">
-				<a
-					href="#"
+				<NuxtLink
+					:to="`/marketplace/category/${category.slug}`"
 					class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
 				>
 					<component :is="category.icon" class="w-5 h-5 mr-3" />
 					<span>{{ category.name }}</span>
-				</a>
+				</NuxtLink>
 			</li>
 			<li class="mt-2">
-				<a
-					href="#"
+				<NuxtLink
+					to="/marketplace/category"
 					class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
 				>
 					<Ellipsis class="w-5 h-5 mr-3" />
 					<span>Show all categories</span>
-				</a>
+				</NuxtLink>
 			</li>
 		</ul>
 
@@ -92,12 +92,16 @@ import {
 import { Separator } from "~/components/ui/separator";
 
 const categories = [
-	{ name: "Electronics & Gadgets", icon: Smartphone },
-	{ name: "Clothing & Accessories", icon: Shirt },
-	{ name: "Sports & Outdoor", icon: Backpack },
-	{ name: "Home & Garden", icon: Home },
-	{ name: "Toys & Games", icon: Watch },
-	{ name: "Books & Magazines", icon: Book },
-	{ name: "Cars & Motorcycles", icon: Car },
+	{
+		name: "Electronics & Gadgets",
+		slug: "electronics-gadgets",
+		icon: Smartphone,
+	},
+	{ name: "Clothing & Accessories", slug: "clothing-accessories", icon: Shirt },
+	{ name: "Sports & Outdoor", slug: "sports-outdoor", icon: Backpack },
+	{ name: "Home & Garden", slug: "home-garden", icon: Home },
+	{ name: "Toys & Games", slug: "toys-games", icon: Watch },
+	{ name: "Books & Magazines", slug: "books-magazines", icon: Book },
+	{ name: "Cars & Motorcycles", slug: "cars-motorcycles", icon: Car },
 ];
 </script>
