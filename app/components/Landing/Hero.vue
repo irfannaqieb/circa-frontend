@@ -15,11 +15,13 @@
 			>
 				Get Started
 			</Button>
-			<Button
-				class="border border-slate-300 px-8 py-3 rounded-lg font-medium transition-colors"
-			>
-				Browse Items
-			</Button>
+			<NuxtLink to="/marketplace">
+				<Button
+					class="border border-slate-300 px-8 py-3 rounded-lg font-medium transition-colors"
+				>
+					Browse Items
+				</Button>
+			</NuxtLink>
 		</div>
 
 		<div class="max-w-4xl mx-auto px-4">
