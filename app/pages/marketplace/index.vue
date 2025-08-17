@@ -82,10 +82,76 @@
 			<MarketplaceItemCard status="Reserved" />
 			<MarketplaceItemCard status="Sold" />
 		</div>
+
+		<!-- Pagination -->
+		<div class="mt-12 space-y-6">
+			<div class="text-sm text-slate-600 text-center">
+				<span v-if="totalItems > 0" class="font-medium">
+					Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} items
+				</span>
+				<span v-else class="text-slate-500">No items found</span>
+			</div>
+
+			<div class="flex justify-center">
+				<Pagination
+					:page="currentPage"
+					:items-per-page="pageSize"
+					:total="totalItems"
+					:sibling-count="1"
+					@update:page="currentPage = $event"
+				>
+					<PaginationContent class="gap-1">
+						<PaginationItem :value="currentPage - 1" class="mr-10">
+							<PaginationPrevious
+								:href="currentPage > 1 ? '#' : undefined"
+								:class="{
+									'pointer-events-none opacity-50': currentPage === 1,
+									'hover:bg-slate-100 transition-colors': currentPage > 1,
+								}"
+								class="px-4 py-2 text-sm font-medium"
+								@click="currentPage > 1 && currentPage--"
+							/>
+						</PaginationItem>
+
+						<template v-for="page in totalPages" :key="page">
+							<PaginationItem :value="page" class="mx-1">
+								<Button
+									:variant="page === currentPage ? 'default' : 'outline'"
+									:class="{
+										'bg-blue-600 text-white border-blue-600 hover:bg-blue-700':
+											page === currentPage,
+										'text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-slate-400':
+											page !== currentPage,
+									}"
+									class="w-10 h-10 text-sm font-medium transition-all duration-200"
+									@click="currentPage = page"
+								>
+									{{ page }}
+								</Button>
+							</PaginationItem>
+						</template>
+
+						<PaginationItem :value="currentPage + 1" class="ml-8">
+							<PaginationNext
+								:href="currentPage < totalPages ? '#' : undefined"
+								:class="{
+									'pointer-events-none opacity-50': currentPage === totalPages,
+									'hover:bg-slate-100 transition-colors':
+										currentPage < totalPages,
+								}"
+								class="px-4 py-2 text-sm font-medium"
+								@click="currentPage < totalPages && currentPage++"
+							/>
+						</PaginationItem>
+					</PaginationContent>
+				</Pagination>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from "vue";
 import { ListFilter, ArrowUpDown } from "lucide-vue-next";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -96,10 +162,29 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
+import {
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationNext,
+	PaginationPrevious,
+} from "~/components/ui/pagination";
 
 definePageMeta({
 	layout: "marketplace",
 });
+
+// Pagination state
+const currentPage = ref(1);
+const pageSize = ref(20);
+const totalItems = ref(120); // This will come from backend later
+
+const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
+const startItem = computed(() => (currentPage.value - 1) * pageSize.value + 1);
+const endItem = computed(() =>
+	Math.min(currentPage.value * pageSize.value, totalItems.value)
+);
 </script>
 
 <style scoped></style>
