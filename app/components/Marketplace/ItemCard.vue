@@ -27,11 +27,11 @@
 		<CardFooter>
 			<div class="flex w-full gap-4">
 				<Button variant="outline">
-					<Eye class="mr-2 h-4 w-4" />
+					<Eye class="h-4 w-4" />
 					View details
 				</Button>
 				<Button variant="default" class="bg-black text-white">
-					<ShoppingCart class="mr-2 h-4 w-4" />
+					<ShoppingCart class="h-4 w-4" />
 					Buy
 				</Button>
 			</div>
