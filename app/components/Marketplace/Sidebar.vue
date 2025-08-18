@@ -1,13 +1,16 @@
 <template>
+	<!-- the logo row -->
 	<div class="w-64 p-4 border-r flex flex-col sticky top-0 h-screen">
-		<div class="flex items-center space-x-3 mb-6">
-			<div
-				class="w-10 h-10 bg-black rounded-full flex items-center justify-center"
-			>
-				<span class="text-white font-bold text-lg">c.</span>
+		<NuxtLink to="/" class="mb-6">
+			<div class="flex items-center space-x-3">
+				<div
+					class="w-10 h-10 bg-black rounded-full flex items-center justify-center"
+				>
+					<span class="text-white font-bold text-lg">c.</span>
+				</div>
+				<span class="text-xl font-bold text-gray-900">circa</span>
 			</div>
-			<span class="text-xl font-bold text-gray-900">circa</span>
-		</div>
+		</NuxtLink>
 
 		<ProfileDropdown />
 
