@@ -1,23 +1,24 @@
 <template>
 	<div
-		class="text-center py-16 md:py-24 bg-gradient-to-br from-slate-50 to-slate-100 mt-4 rounded-4xl"
+		class="text-center py-16 md:py-24 bg-gradient-to-br from-muted to-secondary mt-4 rounded-4xl"
 	>
-		<h1 class="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
+		<h1 class="text-4xl md:text-6xl font-bold text-foreground mb-6">
 			Your Home's Treasure Chest
 		</h1>
-		<p class="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
+		<p class="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
 			Lend, borrow, and give away what you have — save money, reduce waste, and
 			connect with your community.
 		</p>
 		<div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
 			<Button
-				class="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+				class="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
 			>
 				Get Started
 			</Button>
 			<NuxtLink to="/marketplace">
 				<Button
-					class="border border-slate-300 px-8 py-3 rounded-lg font-medium transition-colors"
+					variant="outline"
+					class="px-8 py-3 rounded-lg font-medium transition-colors"
 				>
 					Browse Items
 				</Button>
@@ -25,7 +26,7 @@
 		</div>
 
 		<div class="max-w-4xl mx-auto px-4">
-			<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+			<div class="bg-card rounded-xl shadow-lg border border-border p-6">
 				<div class="space-y-4">
 					<!-- Search Input -->
 					<div class="relative">
@@ -67,7 +68,7 @@
 						</Select>
 
 						<Button
-							class="bg-blue-600 text-white px-8 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+							class="bg-primary text-primary-foreground px-8 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors"
 						>
 							Search
 						</Button>

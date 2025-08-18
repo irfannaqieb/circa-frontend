@@ -14,12 +14,14 @@
 			<div class="flex justify-between">
 				<div>
 					<CardTitle>{{ title || "Apple Watch" }}</CardTitle>
-					<p class="text-xs text-gray-500">{{ timeAgo || "6 months ago" }}</p>
+					<p class="text-xs text-muted-foreground">
+						{{ timeAgo || "6 months ago" }}
+					</p>
 				</div>
 				<BadgeItemStatus :status="status" />
 			</div>
 			<p class="text-lg font-semibold">{{ price || "$500" }}</p>
-			<div class="flex items-center text-sm text-gray-500">
+			<div class="flex items-center text-sm text-muted-foreground">
 				<MapPin class="mr-1 h-4 w-4" />
 				<span>{{ location || "New York, NY" }}</span>
 			</div>
@@ -33,7 +35,7 @@
 					<Eye class="h-4 w-4" />
 					View details
 				</Button>
-				<Button variant="default" class="bg-black text-white">
+				<Button variant="default">
 					<ShoppingCart class="h-4 w-4" />
 					Buy
 				</Button>

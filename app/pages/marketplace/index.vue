@@ -1,15 +1,15 @@
 <template>
 	<div class="mb-8">
 		<div class="mb-8">
-			<h1 class="text-4xl font-bold text-slate-900 mb-2">
+			<h1 class="text-4xl font-bold text-foreground mb-2">
 				Explore the Marketplace
 			</h1>
-			<p class="text-lg text-slate-600">
+			<p class="text-lg text-muted-foreground">
 				Discover hidden gems and connect with your community.
 			</p>
 		</div>
 		<div class="my-8">
-			<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+			<div class="bg-card rounded-xl shadow-sm border border-border p-6">
 				<div class="space-y-4">
 					<!-- Search Input -->
 					<div class="relative">
@@ -51,7 +51,7 @@
 						</Select>
 
 						<Button
-							class="bg-blue-600 text-white px-8 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full sm:w-auto"
+							class="bg-primary text-primary-foreground px-8 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors w-full sm:w-auto"
 						>
 							Search
 						</Button>
@@ -85,11 +85,11 @@
 
 		<!-- Pagination -->
 		<div class="mt-12 space-y-6">
-			<div class="text-sm text-slate-600 text-center">
+			<div class="text-sm text-muted-foreground text-center">
 				<span v-if="totalItems > 0" class="font-medium">
 					Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} items
 				</span>
-				<span v-else class="text-slate-500">No items found</span>
+				<span v-else class="text-muted-foreground">No items found</span>
 			</div>
 
 			<div class="flex justify-center">
@@ -106,7 +106,7 @@
 								:href="currentPage > 1 ? '#' : undefined"
 								:class="{
 									'pointer-events-none opacity-50': currentPage === 1,
-									'hover:bg-slate-100 transition-colors': currentPage > 1,
+									'hover:bg-accent transition-colors': currentPage > 1,
 								}"
 								class="px-4 py-2 text-sm font-medium"
 								@click="currentPage > 1 && currentPage--"
@@ -117,12 +117,6 @@
 							<PaginationItem :value="page" class="mx-1">
 								<Button
 									:variant="page === currentPage ? 'default' : 'outline'"
-									:class="{
-										'bg-blue-600 text-white border-blue-600 hover:bg-blue-700':
-											page === currentPage,
-										'text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-slate-400':
-											page !== currentPage,
-									}"
 									class="w-10 h-10 text-sm font-medium transition-all duration-200"
 									@click="currentPage = page"
 								>
@@ -136,8 +130,7 @@
 								:href="currentPage < totalPages ? '#' : undefined"
 								:class="{
 									'pointer-events-none opacity-50': currentPage === totalPages,
-									'hover:bg-slate-100 transition-colors':
-										currentPage < totalPages,
+									'hover:bg-accent transition-colors': currentPage < totalPages,
 								}"
 								class="px-4 py-2 text-sm font-medium"
 								@click="currentPage < totalPages && currentPage++"

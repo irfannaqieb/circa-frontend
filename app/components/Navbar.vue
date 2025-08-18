@@ -4,36 +4,36 @@
 			<!-- Left side - Logo and brand name -->
 			<div class="flex items-center space-x-3">
 				<div
-					class="w-10 h-10 bg-black rounded-full flex items-center justify-center"
+					class="w-10 h-10 bg-primary rounded-full flex items-center justify-center"
 				>
-					<span class="text-white font-bold text-lg">c.</span>
+					<span class="text-primary-foreground font-bold text-lg">c.</span>
 				</div>
-				<span class="text-xl font-bold text-gray-900">circa</span>
+				<span class="text-xl font-bold text-foreground">circa</span>
 			</div>
 
 			<!-- Middle - Navigation links -->
 			<div class="hidden md:flex items-center space-x-8">
 				<NuxtLink
 					to="/"
-					class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+					class="text-muted-foreground hover:text-foreground font-medium transition-colors"
 				>
 					Home
 				</NuxtLink>
 				<NuxtLink
 					to="/marketplace"
-					class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+					class="text-muted-foreground hover:text-foreground font-medium transition-colors"
 				>
 					Marketplace
 				</NuxtLink>
 				<!-- <NuxtLink
 					to="/about"
-					class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+					class="text-muted-foreground hover:text-foreground font-medium transition-colors"
 				>
 					About
 				</NuxtLink>
 				<NuxtLink
 					to="/contact"
-					class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+					class="text-muted-foreground hover:text-foreground font-medium transition-colors"
 				>
 					Contact
 				</NuxtLink> -->
@@ -63,7 +63,7 @@
 			<div class="md:hidden">
 				<button
 					@click="toggleMobileMenu"
-					class="text-gray-700 hover:text-gray-900"
+					class="text-muted-foreground hover:text-foreground"
 				>
 					<svg
 						class="w-6 h-6"
@@ -85,18 +85,21 @@
 		<!-- Mobile navigation menu -->
 		<div v-if="isMobileMenuOpen" class="md:hidden mt-4 pb-4 pt-4">
 			<div class="flex flex-col space-y-4">
-				<NuxtLink to="/" class="text-gray-700 hover:text-gray-900 font-medium">
+				<NuxtLink
+					to="/"
+					class="text-muted-foreground hover:text-foreground font-medium"
+				>
 					Home
 				</NuxtLink>
 				<NuxtLink
 					to="/about"
-					class="text-gray-700 hover:text-gray-900 font-medium"
+					class="text-muted-foreground hover:text-foreground font-medium"
 				>
 					About
 				</NuxtLink>
 				<NuxtLink
 					to="/contact"
-					class="text-gray-700 hover:text-gray-900 font-medium"
+					class="text-muted-foreground hover:text-foreground font-medium"
 				>
 					Contact
 				</NuxtLink>

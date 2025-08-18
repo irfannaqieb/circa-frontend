@@ -4,22 +4,24 @@
 		<NuxtLink to="/" class="mb-6">
 			<div class="flex items-center space-x-3">
 				<div
-					class="w-10 h-10 bg-black rounded-full flex items-center justify-center"
+					class="w-10 h-10 bg-primary rounded-full flex items-center justify-center"
 				>
-					<span class="text-white font-bold text-lg">c.</span>
+					<span class="text-primary-foreground font-bold text-lg">c.</span>
 				</div>
-				<span class="text-xl font-bold text-gray-900">circa</span>
+				<span class="text-xl font-bold text-foreground">circa</span>
 			</div>
 		</NuxtLink>
 
 		<ProfileDropdown />
 
-		<h1 class="text-lg font-semibold text-gray-500 mt-6 mb-2">Marketplace</h1>
+		<h1 class="text-lg font-semibold text-muted-foreground mt-6 mb-2">
+			Marketplace
+		</h1>
 		<ul>
 			<li class="mt-2">
 				<a
 					href="#"
-					class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
+					class="flex items-center text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
 				>
 					<List class="w-5 h-5 mr-3" />
 					<span>My Listings</span>
@@ -28,7 +30,7 @@
 			<li class="mt-2">
 				<a
 					href="#"
-					class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
+					class="flex items-center text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
 				>
 					<MessageSquare class="w-5 h-5 mr-3" />
 					<span>Messages</span>
@@ -38,12 +40,14 @@
 
 		<Separator class="my-2" />
 
-		<h1 class="text-lg font-semibold text-gray-500 mt-2 mb-2">Categories</h1>
+		<h1 class="text-lg font-semibold text-muted-foreground mt-2 mb-2">
+			Categories
+		</h1>
 		<ul>
 			<li v-for="category in categories" :key="category.name" class="mt-2">
 				<NuxtLink
 					:to="`/marketplace/category/${category.slug}`"
-					class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
+					class="flex items-center text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
 				>
 					<component :is="category.icon" class="w-5 h-5 mr-3" />
 					<span>{{ category.name }}</span>
@@ -52,7 +56,7 @@
 			<li class="mt-2">
 				<NuxtLink
 					to="/marketplace/category"
-					class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
+					class="flex items-center text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
 				>
 					<Ellipsis class="w-5 h-5 mr-3" />
 					<span>Show all categories</span>
@@ -66,7 +70,7 @@
 				<li class="mt-2">
 					<NuxtLink
 						to="/support"
-						class="flex items-center text-gray-600 hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
+						class="flex items-center text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
 					>
 						<LifeBuoy class="w-5 h-5 mr-3" />
 						<span>Help & Support</span>

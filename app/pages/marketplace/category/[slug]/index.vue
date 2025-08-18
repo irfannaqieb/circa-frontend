@@ -4,37 +4,39 @@
 		<div class="mb-8">
 			<div class="flex items-center space-x-4 mb-4">
 				<div
-					class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center"
+					class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center"
 				>
-					<component :is="categoryData?.icon" class="w-8 h-8 text-blue-600" />
+					<component :is="categoryData?.icon" class="w-8 h-8 text-primary" />
 				</div>
 				<div>
-					<h1 class="text-4xl font-bold text-slate-900">
+					<h1 class="text-4xl font-bold text-foreground">
 						{{ categoryData?.name }}
 					</h1>
-					<p class="text-lg text-slate-600">
+					<p class="text-lg text-muted-foreground">
 						{{ categoryData?.description }}
 					</p>
 				</div>
 			</div>
 
 			<!-- Breadcrumb -->
-			<nav class="flex items-center space-x-2 text-sm text-slate-500">
-				<NuxtLink to="/marketplace" class="hover:text-slate-700"
+			<nav class="flex items-center space-x-2 text-sm text-muted-foreground">
+				<NuxtLink to="/marketplace" class="hover:text-foreground"
 					>Marketplace</NuxtLink
 				>
 				<span>/</span>
-				<NuxtLink to="/marketplace/category" class="hover:text-slate-700"
+				<NuxtLink to="/marketplace/category" class="hover:text-foreground"
 					>Categories</NuxtLink
 				>
 				<span>/</span>
-				<span class="text-slate-900 font-medium">{{ categoryData?.name }}</span>
+				<span class="text-foreground font-medium">{{
+					categoryData?.name
+				}}</span>
 			</nav>
 		</div>
 
 		<!-- Filters Section -->
 		<div class="my-8">
-			<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+			<div class="bg-card rounded-xl shadow-sm border border-border p-6">
 				<MarketplaceItemFilter
 					:total-items="filteredItems.length"
 					v-model="filters"
@@ -64,7 +66,7 @@
 
 		<!-- Pagination -->
 		<div class="mt-12 space-y-6">
-			<div class="text-sm text-slate-600 text-center">
+			<div class="text-sm text-muted-foreground text-center">
 				<span class="font-medium">
 					Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} items
 				</span>
@@ -84,7 +86,7 @@
 								:href="currentPage > 1 ? '#' : undefined"
 								:class="{
 									'pointer-events-none opacity-50': currentPage === 1,
-									'hover:bg-slate-100 transition-colors': currentPage > 1,
+									'hover:bg-accent transition-colors': currentPage > 1,
 								}"
 								class="px-4 py-2 text-sm font-medium"
 								@click="currentPage > 1 && currentPage--"
@@ -95,12 +97,6 @@
 							<PaginationItem :value="page" class="mx-1">
 								<Button
 									:variant="page === currentPage ? 'default' : 'outline'"
-									:class="{
-										'bg-blue-600 text-white border-blue-600 hover:bg-blue-700':
-											page === currentPage,
-										'text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-slate-400':
-											page !== currentPage,
-									}"
 									class="w-10 h-10 text-sm font-medium transition-all duration-200"
 									@click="currentPage = page"
 								>
@@ -114,8 +110,7 @@
 								:href="currentPage < totalPages ? '#' : undefined"
 								:class="{
 									'pointer-events-none opacity-50': currentPage === totalPages,
-									'hover:bg-slate-100 transition-colors':
-										currentPage < totalPages,
+									'hover:bg-accent transition-colors': currentPage < totalPages,
 								}"
 								class="px-4 py-2 text-sm font-medium"
 								@click="currentPage < totalPages && currentPage++"

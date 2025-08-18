@@ -6,35 +6,39 @@
 				<div class="flex flex-wrap justify-center space-x-6 text-sm">
 					<a
 						href="#"
-						class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+						class="text-muted-foreground hover:text-foreground font-medium transition-colors"
 						>About</a
 					>
-					<span class="text-slate-400">•</span>
+					<span class="text-muted-foreground">•</span>
 					<a
 						href="#"
-						class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+						class="text-muted-foreground hover:text-foreground font-medium transition-colors"
 						>FAQ</a
 					>
-					<span class="text-slate-400">•</span>
+					<span class="text-muted-foreground">•</span>
 					<a
 						href="#"
-						class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+						class="text-muted-foreground hover:text-foreground font-medium transition-colors"
 						>Campus Rules</a
 					>
-					<span class="text-slate-400">•</span>
+					<span class="text-muted-foreground">•</span>
 					<a
 						href="#"
-						class="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+						class="text-muted-foreground hover:text-foreground font-medium transition-colors"
 						>Contact</a
 					>
 				</div>
 			</div>
 
 			<!-- Badge -->
-			<div class="mt-6 pt-4 border-t border-slate-200 text-center">
-				<div class="inline-flex items-center space-x-2 text-xs text-slate-600">
+			<div class="mt-6 pt-4 border-t border-border text-center">
+				<div
+					class="inline-flex items-center space-x-2 text-xs text-muted-foreground"
+				>
 					<span>Made by team</span>
-					<Badge variant="secondary" class="text-slate-700"> git good :D</Badge>
+					<Badge variant="secondary" class="text-muted-foreground">
+						git good :D</Badge
+					>
 				</div>
 			</div>
 		</div>
