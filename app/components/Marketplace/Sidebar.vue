@@ -17,6 +17,12 @@
 		<h1 class="text-lg font-semibold text-muted-foreground mt-6 mb-2">
 			Marketplace
 		</h1>
+		<NuxtLink to="/marketplace/item" class="mb-2">
+			<Button variant="outline" class="justify-start shadow-md">
+				<Plus class="w-4 h-4" />
+				Add Item
+			</Button>
+		</NuxtLink>
 		<ul>
 			<li class="mt-2">
 				<a
@@ -94,9 +100,11 @@ import {
 	MessageSquare,
 	Ellipsis,
 	LifeBuoy,
+	Plus,
 } from "lucide-vue-next";
 
 import { Separator } from "~/components/ui/separator";
+import { Button } from "~/components/ui/button";
 
 const categories = [
 	{
