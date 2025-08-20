@@ -143,7 +143,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSessionStore } from "@/stores/session.store";
-// Using simple alerts for now - can be replaced with toast library later
+import { toast } from "vue-sonner";
 
 interface Props {
 	open?: boolean;
@@ -201,53 +201,53 @@ const onSubmit = async (values: any) => {
 			? await session.signUpWithPassword(values.email, values.password)
 			: await session.signInWithPassword(values.email, values.password);
 
-		if (result.ok) {
-			if (process.client) {
-				alert(
-					isSignUp.value
-						? "Account created. Check your email to confirm if required."
-						: "Signed in successfully."
-				);
-			}
-			updateOpen(false);
-			emit("success");
-		} else {
-			if (process.client) {
-				alert(
-					session.error ||
-						(isSignUp.value ? "Failed to create account" : "Failed to sign in")
-				);
-			}
-		}
-	} catch (error) {
-		console.error("Auth error:", error);
-		if (process.client) {
-			alert("An unexpected error occurred");
-		}
-	}
+                if (result.ok) {
+                        if (process.client) {
+                                toast.success(
+                                        isSignUp.value
+                                                ? "Account created. Check your email to confirm if required."
+                                                : "Signed in successfully."
+                                );
+                        }
+                        updateOpen(false);
+                        emit("success");
+                } else {
+                        if (process.client) {
+                                toast.error(
+                                        session.error ||
+                                                (isSignUp.value ? "Failed to create account" : "Failed to sign in")
+                                );
+                        }
+                }
+        } catch (error) {
+                console.error("Auth error:", error);
+                if (process.client) {
+                        toast.error("An unexpected error occurred");
+                }
+        }
 };
 
 const onOAuth = async (provider: "google" | "github") => {
 	isOauthRedirecting.value = true;
 	try {
 		const result = await session.signInWithProvider(provider);
-		if (!result?.ok) {
-			console.error("OAuth sign-in initiation failed", {
-				provider,
-				error: (result as any)?.error,
-			});
-			if (process.client) {
-				alert("Unable to start OAuth sign-in, please try again");
-			}
-			isOauthRedirecting.value = false;
-		}
+                if (!result?.ok) {
+                        console.error("OAuth sign-in initiation failed", {
+                                provider,
+                                error: (result as any)?.error,
+                        });
+                        if (process.client) {
+                                toast.error("Unable to start OAuth sign-in, please try again");
+                        }
+                        isOauthRedirecting.value = false;
+                }
 		// On success, a redirect is likely to occur; keep redirecting state true.
 	} catch (error) {
-		console.error("OAuth sign-in initiation threw", { provider, error });
-		if (process.client) {
-			alert("Unable to start OAuth sign-in, please try again");
-		}
-		isOauthRedirecting.value = false;
-	}
+                console.error("OAuth sign-in initiation threw", { provider, error });
+                if (process.client) {
+                        toast.error("Unable to start OAuth sign-in, please try again");
+                }
+                isOauthRedirecting.value = false;
+        }
 };
 </script>
