@@ -130,18 +130,25 @@ function checkPriceConsistency(input: Partial<Item>) {
 	const opm = input.original_price_minor ?? null;
 	const bpm = input.base_price_minor ?? null;
 
-	if (isGiveaway) {
-		if (opm && opm !== 0)
-			throw new Error("Giveaway items must have original price minor = 0");
-		if (bpm && bpm !== 0)
-			throw new Error("Giveaway items must have base price minor = 0");
-	} else {
-		if (opm == null || bpm == null) {
-			throw new Error(
-				"Non-giveaway items must have both original and base price minor"
-			);
-		}
-	}
+        if (isGiveaway) {
+                if (opm != null && opm !== 0)
+                        throw new Error(
+                                "Giveaway items must have original price minor = 0"
+                        );
+                if (bpm != null && bpm !== 0)
+                        throw new Error(
+                                "Giveaway items must have base price minor = 0"
+                        );
+        } else {
+                if (opm == null || bpm == null)
+                        throw new Error(
+                                "Non-giveaway items must have both original and base price minor"
+                        );
+                if ((opm ?? 0) < 0 || (bpm ?? 0) < 0)
+                        throw new Error(
+                                "Price minor values cannot be negative"
+                        );
+        }
 }
 // insert a new row to the items table
 export async function createItem(input: InsertItem) {
