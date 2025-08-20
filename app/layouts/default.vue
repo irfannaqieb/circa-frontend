@@ -5,7 +5,10 @@
 			<NuxtPage />
 		</main>
 		<Footer />
+		<Toaster />
 	</div>
 </template>
 
-<script setup></script>
+<script setup>
+import { Toaster } from "vue-sonner";
+</script>

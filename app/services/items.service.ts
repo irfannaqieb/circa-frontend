@@ -1,6 +1,24 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 
-export type ItemStatus = "available" | "reserved" | "unavailable";
+export interface Category {
+	id: string;
+	name: string;
+	slug: string;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface ItemImage {
+	id: string;
+	item_id: string;
+	path: string;
+	position: number;
+	is_primary: boolean;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export type ItemStatus = "Available" | "Reserved" | "Sold";
 
 export interface Item {
 	id: string;
@@ -8,6 +26,7 @@ export interface Item {
 	title: string;
 	description?: string | null;
 	category?: string | null;
+	category_id?: string | null;
 	condition?: string | null;
 	is_giveaway?: boolean | null;
 	location?: string | null;
@@ -154,4 +173,89 @@ export async function deleteItem(id: string) {
 	const client = getClient();
 	const { error } = await client.from("items").delete().eq("id", id);
 	return { ok: !error, error: error as PostgrestError | null };
+}
+
+// get all categories
+export async function getCategories() {
+	const client = getClient();
+	const { data, error } = await client
+		.from("categories")
+		.select("*")
+		.order("name", { ascending: true });
+	return {
+		data: data as Category[] | null,
+		error: error as PostgrestError | null,
+	};
+}
+
+// upload image to Supabase Storage
+export async function uploadImage(
+	file: File,
+	itemId: string
+): Promise<{ data: string | null; error: any }> {
+	const client = getClient();
+
+	// Create unique filename
+	const fileExt = file.name.split(".").pop() || "jpg";
+	const fileName = `${itemId}/${Date.now()}.${fileExt}`;
+
+	const { data, error } = await client.storage
+		.from("item-images")
+		.upload(fileName, file);
+
+	if (error) {
+		return { data: null, error };
+	}
+
+	return { data: fileName, error: null };
+}
+
+// save image reference to database
+export async function createItemImage(
+	itemId: string,
+	path: string,
+	position: number,
+	isPrimary: boolean = false
+) {
+	const client = getClient();
+
+	const { data, error } = await client
+		.from("item_images")
+		.insert({
+			item_id: itemId,
+			path: path,
+			position: position,
+			is_primary: isPrimary,
+		})
+		.select("*")
+		.single();
+
+	return {
+		data: data as ItemImage | null,
+		error: error as PostgrestError | null,
+	};
+}
+
+// get images for an item
+export async function getItemImages(itemId: string) {
+	const client = getClient();
+
+	const { data, error } = await client
+		.from("item_images")
+		.select("*")
+		.eq("item_id", itemId)
+		.order("position", { ascending: true });
+
+	return {
+		data: data as ItemImage[] | null,
+		error: error as PostgrestError | null,
+	};
+}
+
+// get public URL for an image
+export function getImageUrl(path: string): string {
+	const client = getClient();
+	const { data } = client.storage.from("item-images").getPublicUrl(path);
+
+	return data.publicUrl;
 }
