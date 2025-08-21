@@ -164,13 +164,21 @@
 					<div class="flex items-center gap-4">
 						<Avatar>
 							<AvatarImage
-								src="https://github.com/radix-vue.png"
-								alt="Seller Avatar"
+								v-if="sellerProfile?.photo_url"
+								:src="sellerProfile.photo_url"
+								:alt="sellerProfile.display_name || 'Seller Avatar'"
 							/>
-							<AvatarFallback>SL</AvatarFallback>
+							<AvatarFallback>{{ sellerInitials }}</AvatarFallback>
 						</Avatar>
-						<div>
-							<p class="font-semibold">Seller Name</p>
+						<div class="flex-1">
+							<div class="flex justify-between items-center">
+								<p class="font-semibold">
+									{{ sellerProfile?.display_name || "Seller" }}
+								</p>
+								<NuxtLink :to="`/profile/${item.owner_id}`">
+									<Button variant="secondary" size="sm">View Profile</Button>
+								</NuxtLink>
+							</div>
 							<div
 								class="flex items-center gap-1 text-sm text-muted-foreground"
 							>
@@ -178,10 +186,6 @@
 								<span>⭐️ 4.9 (123 sales)</span>
 							</div>
 						</div>
-					</div>
-					<div class="grid grid-cols-2 gap-2 mt-4">
-						<Button variant="secondary">View Profile</Button>
-						<Button variant="secondary">More from seller</Button>
 					</div>
 				</div>
 			</div>
@@ -254,6 +258,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { getProfileById, type Profile } from "~/services/profiles.service";
 
 // Helper functions
 function formatPrice(
@@ -286,6 +291,7 @@ const item = ref<
 	| null
 >(null);
 const loading = ref(true);
+const sellerProfile = ref<Profile | null>(null);
 
 const selectedImage = ref<ItemImage | null>(null);
 
@@ -336,6 +342,18 @@ onMounted(async () => {
 			} else {
 				item.value.images = imageData || [];
 			}
+
+			// Fetch seller profile using owner_id
+			if (item.value?.owner_id) {
+				const { data: profileData, error: profileError } = await getProfileById(
+					item.value.owner_id
+				);
+				if (profileError) {
+					console.error("Error fetching seller profile:", profileError);
+				} else {
+					sellerProfile.value = profileData;
+				}
+			}
 		}
 	} catch (err) {
 		console.error("An unexpected error occurred:", err);
@@ -344,5 +362,16 @@ onMounted(async () => {
 	} finally {
 		loading.value = false;
 	}
+});
+
+const sellerInitials = computed(() => {
+	const name = (sellerProfile.value?.display_name || "").trim();
+	if (!name) return "SL";
+	const parts = name.split(/\s+/);
+	const initials = parts
+		.slice(0, 2)
+		.map((p) => p.charAt(0).toUpperCase())
+		.join("");
+	return initials || "SL";
 });
 </script>

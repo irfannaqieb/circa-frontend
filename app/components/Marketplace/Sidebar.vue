@@ -55,7 +55,7 @@
 					:to="`/marketplace/category/${category.slug}`"
 					class="flex items-center text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
 				>
-					<component :is="category.icon" class="w-5 h-5 mr-3" />
+					<component :is="ICONS[category.icon_key]" class="w-5 h-5 mr-3" />
 					<span>{{ category.name }}</span>
 				</NuxtLink>
 			</li>
@@ -88,35 +88,16 @@
 </template>
 
 <script setup lang="ts">
-import {
-	Smartphone,
-	Watch,
-	Shirt,
-	Backpack,
-	Home,
-	Book,
-	Car,
-	List,
-	MessageSquare,
-	Ellipsis,
-	LifeBuoy,
-	Plus,
-} from "lucide-vue-next";
+import { List, MessageSquare, Ellipsis, LifeBuoy, Plus } from "lucide-vue-next";
+import { useCategoriesStore } from "~/stores/categories.store";
+import { ICONS } from "~/lib/icon.map";
 
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
+import { storeToRefs } from "pinia";
 
-const categories = [
-	{
-		name: "Electronics & Gadgets",
-		slug: "electronics-gadgets",
-		icon: Smartphone,
-	},
-	{ name: "Clothing & Accessories", slug: "clothing-accessories", icon: Shirt },
-	{ name: "Sports & Outdoor", slug: "sports-outdoor", icon: Backpack },
-	{ name: "Home & Garden", slug: "home-garden", icon: Home },
-	{ name: "Toys & Games", slug: "toys-games", icon: Watch },
-	{ name: "Books & Magazines", slug: "books-magazines", icon: Book },
-	{ name: "Cars & Motorcycles", slug: "cars-motorcycles", icon: Car },
-];
+const categoriesStore = useCategoriesStore();
+categoriesStore.fetch();
+
+const { categories } = storeToRefs(categoriesStore);
 </script>
