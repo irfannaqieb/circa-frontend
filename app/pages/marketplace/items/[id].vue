@@ -183,7 +183,15 @@
 								class="flex items-center gap-1 text-sm text-muted-foreground"
 							>
 								<!-- Star rating placeholder -->
-								<span>⭐️ 4.9 (123 sales)</span>
+								<span v-if="sellerProfile"
+									>⭐️
+									{{
+										sellerProfile.trust_score
+											? sellerProfile.trust_score.toFixed(1)
+											: "N/A"
+									}}
+									(123 sales)</span
+								>
 							</div>
 						</div>
 					</div>
@@ -231,8 +239,8 @@ import {
 	type Item,
 	type ItemImage,
 	getImageUrl,
-	type Category,
 } from "~/services/items.service";
+import { type Category } from "~/services/categories.service";
 import { toast } from "vue-sonner";
 import { Badge } from "~/components/ui/badge";
 import {

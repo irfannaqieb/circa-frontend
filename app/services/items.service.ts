@@ -123,6 +123,25 @@ export async function getItems(options: ItemsQueryOptions = {}) {
 	};
 }
 
+export async function getItemsCount(options: ItemsQueryOptions = {}) {
+	const client = getClient();
+	let query = client.from("items").select("*", { count: "exact", head: true });
+
+	// filtering
+	if (options.categoryId) query = query.eq("category_id", options.categoryId);
+	if (options.status) {
+		query = query.eq("status", options.status);
+	} else {
+		query = query.not("status", "eq", "Draft");
+	}
+
+	const { error, count } = await query;
+	return {
+		count: count ?? null,
+		error: error as PostgrestError | null,
+	};
+}
+
 // get a single item by id
 export async function getItem(id: string) {
 	const client = getClient();
