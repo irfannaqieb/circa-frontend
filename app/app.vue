@@ -11,4 +11,8 @@
 
 <script setup>
 import { Toaster } from "~/components/ui/sonner";
+import { useSessionStore } from "~/stores/session.store";
+
+const sessionStore = useSessionStore();
+sessionStore.initialize();
 </script>

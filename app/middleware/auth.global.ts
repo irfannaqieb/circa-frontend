@@ -13,8 +13,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
 	if (!session.isAuthenticated) {
 		return navigateTo({
-			path: "/",
-			query: { login: "1", redirect: to.fullPath },
+			path: "/login",
+			query: { redirect: to.fullPath },
 		});
 	}
 });

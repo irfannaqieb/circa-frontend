@@ -129,14 +129,18 @@ export const useSessionStore = defineStore("session", {
 			this.loading = true;
 			this.error = null;
 			try {
-				const callback =
-					redirectTo ||
-					(process.client
-						? `${window.location.origin}/auth/callback`
-						: undefined);
+				let callbackUrl = process.client
+					? `${window.location.origin}/auth/callback`
+					: "";
+
+				if (redirectTo) {
+					const redirectUrl = new URL(callbackUrl);
+					redirectUrl.searchParams.set("redirect", redirectTo);
+					callbackUrl = redirectUrl.toString();
+				}
 				const { error } = await $supabase.auth.signInWithOAuth({
 					provider,
-					options: { redirectTo: callback },
+					options: { redirectTo: callbackUrl },
 				});
 				if (error) throw error;
 				return { ok: true as const };
