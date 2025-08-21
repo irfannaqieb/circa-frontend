@@ -140,7 +140,7 @@ const signOut = () => {
 };
 
 const signIn = () => {
-    navigateTo("/", { replace: true });
+    navigateTo('/login?redirect=/marketplace', { replace: true });
 };
 </script>
 
