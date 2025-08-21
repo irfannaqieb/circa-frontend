@@ -12,6 +12,7 @@
 		<div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
 			<Button
 				class="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+				@click="handleGetStarted"
 			>
 				Get Started
 			</Button>
@@ -83,6 +84,7 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -92,6 +94,17 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useSessionStore } from "~/stores/session.store";
 
-// Select options are now defined directly in the template
+const session = useSessionStore();
+
+const isLoggedIn = computed(() => !!session.user);
+
+const handleGetStarted = () => {
+	if (isLoggedIn.value) {
+		navigateTo("/marketplace");
+	} else {
+		navigateTo("/login?redirect=/marketplace");
+	}
+};
 </script>

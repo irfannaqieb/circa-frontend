@@ -13,6 +13,7 @@
 				<Button
 					size="lg"
 					class="px-8 py-4 text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+					@click="handleSignUpFree"
 				>
 					Sign Up Free
 				</Button>
@@ -27,5 +28,19 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { Button } from "@/components/ui/button";
+import { useSessionStore } from "~/stores/session.store";
+
+const session = useSessionStore();
+
+const isLoggedIn = computed(() => !!session.user);
+
+const handleSignUpFree = () => {
+	if (isLoggedIn.value) {
+		navigateTo("/marketplace");
+	} else {
+		navigateTo("/login?redirect=/marketplace");
+	}
+};
 </script>
