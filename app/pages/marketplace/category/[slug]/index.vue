@@ -76,6 +76,7 @@
 			<MarketplaceItemCard
 				v-for="item in paginatedItems"
 				:key="item.id"
+				:id="item.id"
 				:status="item.status"
 				:title="item.title"
 				:price="item.price"

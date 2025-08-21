@@ -42,7 +42,7 @@
 		</CardContent>
 		<CardFooter>
 			<div class="flex w-full gap-4">
-				<Button variant="outline">
+				<Button variant="outline" @click="viewDetails">
 					<Eye class="h-4 w-4" />
 					View details
 				</Button>
@@ -74,8 +74,15 @@ import {
 	CarouselNext,
 	CarouselPrevious,
 } from "~/components/ui/carousel";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const props = defineProps({
+	id: {
+		type: String,
+		required: true,
+	},
 	status: {
 		type: String,
 		default: "Available",
@@ -101,6 +108,12 @@ const props = defineProps({
 		default: "6 months ago",
 	},
 });
+
+function viewDetails() {
+	if (props.id) {
+		router.push(`/marketplace/items/${props.id}`);
+	}
+}
 </script>
 
 <style scoped></style>

@@ -116,11 +116,6 @@ export async function getItems(options: ItemsQueryOptions = {}) {
 	}
 
 	const { data, error, count } = await query;
-	console.log("Fetched items from service:", {
-		data: data?.map((d) => d.title),
-		count,
-		error,
-	});
 	return {
 		data: data as Item[] | null,
 		error: error as PostgrestError | null,
