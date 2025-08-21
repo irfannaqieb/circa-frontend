@@ -16,6 +16,7 @@
 					</p>
 					<Button
 						class="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+						@click="handleTryNow"
 					>
 						Try Now
 					</Button>
@@ -106,8 +107,22 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, CalendarCheck, Handshake } from "lucide-vue-next";
+import { useSessionStore } from "~/stores/session.store";
+
+const session = useSessionStore();
+
+const isLoggedIn = computed(() => !!session.user);
+
+const handleTryNow = () => {
+	if (isLoggedIn.value) {
+		navigateTo("/marketplace");
+	} else {
+		navigateTo("/login?redirect=/marketplace");
+	}
+};
 </script>
