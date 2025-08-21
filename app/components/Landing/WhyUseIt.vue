@@ -120,6 +120,7 @@
 				</p>
 				<Button
 					class="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors mr-4"
+					@click="handleJoinNow"
 				>
 					Join Now
 				</Button>
@@ -135,8 +136,22 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DollarSign, Shield, Users, Award } from "lucide-vue-next";
+import { useSessionStore } from "~/stores/session.store";
+
+const session = useSessionStore();
+
+const isLoggedIn = computed(() => !!session.user);
+
+const handleJoinNow = () => {
+	if (isLoggedIn.value) {
+		navigateTo("/marketplace");
+	} else {
+		navigateTo("/login?redirect=/marketplace");
+	}
+};
 </script>
