@@ -18,6 +18,24 @@
 		>
 			<span class="truncate">Sold</span>
 		</Badge>
+		<Badge
+			v-else-if="status === 'Draft'"
+			class="w-fit bg-gray-100 hover:bg-gray-100 text-gray-800 flex items-center"
+		>
+			<span class="truncate">Draft</span>
+		</Badge>
+		<Badge
+			v-else-if="status === 'Archived'"
+			class="w-fit bg-slate-100 hover:bg-slate-100 text-slate-800 flex items-center"
+		>
+			<span class="truncate">Archived</span>
+		</Badge>
+		<Badge
+			v-else
+			class="w-fit bg-gray-100 hover:bg-gray-100 text-gray-600 flex items-center"
+		>
+			<span class="truncate">{{ status || "Unknown" }}</span>
+		</Badge>
 	</div>
 </template>
 
