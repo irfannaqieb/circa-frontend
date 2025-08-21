@@ -13,40 +13,40 @@
 				<div class="space-y-4">
 					<!-- Search Input -->
 					<div class="relative">
-						<Input placeholder="Search for items..." class="w-full" />
+						<Input
+							v-model="searchQuery"
+							placeholder="Search for items..."
+							class="w-full"
+						/>
 					</div>
 
 					<!-- Filter Dropdowns -->
 					<div class="flex flex-col sm:flex-row gap-4 justify-center">
-						<Select class="w-full sm:w-[200px]">
+						<Select v-model="selectedCategory" class="w-full sm:w-[200px]">
 							<SelectTrigger>
 								<SelectValue placeholder="Categories" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="electronics">Electronics</SelectItem>
-								<SelectItem value="furniture">Furniture</SelectItem>
-								<SelectItem value="books">Books</SelectItem>
+								<SelectItem value="all">All Categories</SelectItem>
+								<SelectItem
+									v-for="category in categories"
+									:key="category.id"
+									:value="category.slug"
+								>
+									{{ category.name }}
+								</SelectItem>
 							</SelectContent>
 						</Select>
 
-						<Select class="w-full sm:w-[200px]">
+						<Select v-model="selectedLocation" class="w-full sm:w-[200px]">
 							<SelectTrigger>
 								<SelectValue placeholder="Location" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="campus">Campus</SelectItem>
-								<SelectItem value="north">North</SelectItem>
-								<SelectItem value="south">South</SelectItem>
-							</SelectContent>
-						</Select>
-
-						<Select class="w-full sm:w-[200px]">
-							<SelectTrigger>
-								<SelectValue placeholder="Availability" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="now">Available Now</SelectItem>
-								<SelectItem value="24h">Next 24 hours</SelectItem>
+								<SelectItem value="all">All Locations</SelectItem>
+								<SelectItem value="Sinchon">Sinchon</SelectItem>
+								<SelectItem value="Yonsei">Yonsei</SelectItem>
+								<SelectItem value="Hongdae">Hongdae</SelectItem>
 							</SelectContent>
 						</Select>
 
@@ -61,26 +61,34 @@
 		</div>
 		<div class="flex justify-between items-center mb-4">
 			<h1 class="text-2xl font-bold">For You</h1>
-			<div class="flex space-x-2">
-				<Button variant="outline">
-					<ListFilter class="mr-2 h-4 w-4" />
-					Filter
-				</Button>
-				<Button variant="outline">
-					<ArrowUpDown class="mr-2 h-4 w-4" />
-					Sort
-				</Button>
+		</div>
+		<div
+			v-if="loading"
+			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+		>
+			<div v-for="n in 8" :key="n" class="space-y-2">
+				<Skeleton class="h-48 w-full" />
+				<Skeleton class="h-4 w-3/4" />
+				<Skeleton class="h-4 w-1/2" />
 			</div>
 		</div>
 		<div
+			v-else-if="formattedItems.length > 0"
 			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
 		>
-			<MarketplaceItemCard status="Available" />
-			<MarketplaceItemCard status="Reserved" />
-			<MarketplaceItemCard status="Sold" />
-			<MarketplaceItemCard status="Available" />
-			<MarketplaceItemCard status="Reserved" />
-			<MarketplaceItemCard status="Sold" />
+			<MarketplaceItemCard
+				v-for="item in formattedItems"
+				:key="item.id"
+				:status="item.status"
+				:title="item.title"
+				:price="item.price"
+				:location="item.location"
+				:images="item.images"
+				:timeAgo="item.timeAgo"
+			/>
+		</div>
+		<div v-else class="text-center py-12 text-muted-foreground">
+			No items found.
 		</div>
 
 		<!-- Pagination -->
@@ -92,13 +100,13 @@
 				<span v-else class="text-muted-foreground">No items found</span>
 			</div>
 
-			<div class="flex justify-center">
+			<div v-if="totalItems > pageSize" class="flex justify-center">
 				<Pagination
 					:page="currentPage"
 					:items-per-page="pageSize"
 					:total="totalItems"
 					:sibling-count="1"
-					@update:page="currentPage = $event"
+					@update:page="handlePageChange"
 				>
 					<PaginationContent class="gap-1">
 						<PaginationItem :value="currentPage - 1" class="mr-10">
@@ -144,7 +152,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { ListFilter, ArrowUpDown } from "lucide-vue-next";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -158,26 +166,93 @@ import {
 import {
 	Pagination,
 	PaginationContent,
-	PaginationEllipsis,
 	PaginationItem,
 	PaginationNext,
 	PaginationPrevious,
 } from "~/components/ui/pagination";
+import { useItemsStore } from "~/stores/items.store";
+import { useCategoriesStore } from "~/stores/categories.store";
+import { storeToRefs } from "pinia";
+import { watchDebounced } from "@vueuse/core";
+import { getImageUrl } from "~/services/items.service";
+import type { ItemsQueryOptions } from "~/stores/items.store";
 
 definePageMeta({
 	layout: "marketplace",
 });
 
-// Pagination state
-const currentPage = ref(1);
-const pageSize = ref(20);
-const totalItems = ref(120); // This will come from backend later
+// Stores
+const itemsStore = useItemsStore();
+const categoriesStore = useCategoriesStore();
+const {
+	items,
+	loading,
+	total: totalItems,
+	page: currentPage,
+	pageSize,
+} = storeToRefs(itemsStore);
+const { categories } = storeToRefs(categoriesStore);
 
+// Filters
+const searchQuery = ref("");
+const selectedCategory = ref("all");
+const selectedLocation = ref("all");
+
+// Fetch initial data
+onMounted(() => {
+	categoriesStore.fetch();
+});
+
+// Watch for filter changes
+watchDebounced(
+	[searchQuery, selectedCategory, selectedLocation],
+	() => {
+		const filters: Partial<ItemsQueryOptions> = {
+			search: searchQuery.value || undefined,
+			categoryId:
+				selectedCategory.value !== "all"
+					? categories.value.find((c) => c.slug === selectedCategory.value)?.id
+					: undefined,
+			location:
+				selectedLocation.value !== "all" ? selectedLocation.value : undefined,
+		};
+		itemsStore.setFilters(filters);
+	},
+	{ debounce: 300, immediate: true }
+);
+
+// Pagination and formatted items
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
 const startItem = computed(() => (currentPage.value - 1) * pageSize.value + 1);
 const endItem = computed(() =>
 	Math.min(currentPage.value * pageSize.value, totalItems.value)
 );
+
+const formattedItems = computed(() =>
+	items.value.map((item) => {
+		const priceValue = item.is_giveaway ? 0 : item.base_price_minor || 0;
+		const images =
+			Array.isArray(item.images) && item.images.length > 0
+				? item.images
+						.sort((a, b) => a.position - b.position)
+						.map((img) => getImageUrl(img.path))
+				: [];
+
+		return {
+			...item,
+			price:
+				priceValue === 0 ? `Free` : `₩${(priceValue || 0).toLocaleString()}`,
+			timeAgo: new Date(item.created_at!).toLocaleDateString(),
+			images,
+			status: item.status || "Available",
+			location: item.location || "N/A",
+		};
+	})
+);
+
+function handlePageChange(page: number) {
+	itemsStore.setPage(page);
+}
 </script>
 
 <style scoped></style>

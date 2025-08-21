@@ -77,7 +77,7 @@ export const useItemsStore = defineStore("items", {
 		setFilters(newFilters: Partial<ItemsQueryOptions>) {
 			// Reset page to 1 when filters change
 			this.page = 1;
-			this.filters = { ...this.filters, ...newFilters };
+			this.filters = newFilters;
 			return this.fetch(); // refetch with new filters
 		},
 

@@ -419,8 +419,15 @@ async function loadItems() {
 		if (searchQuery.value) options.search = searchQuery.value;
 		if (selectedStatusFilter.value && selectedStatusFilter.value !== "all")
 			options.status = selectedStatusFilter.value as any;
-		if (selectedCategoryFilter.value && selectedCategoryFilter.value !== "all")
-			options.category = selectedCategoryFilter.value;
+		if (
+			selectedCategoryFilter.value &&
+			selectedCategoryFilter.value !== "all"
+		) {
+			const category = categories.value.find(
+				(c) => c.slug === selectedCategoryFilter.value
+			);
+			if (category) options.categoryId = category.id;
+		}
 
 		const { data, error, count } = await getItems(options);
 
@@ -521,7 +528,9 @@ async function handleItemAction(action: string, itemId: string) {
 				break;
 			case "mark-reserved":
 				{
-					const { error } = await updateItem(itemId, { status: "Reserved" });
+					const { error } = await updateItem(itemId, {
+						status: "Reserved",
+					});
 					if (error) {
 						toast.error("Failed to mark item as reserved.");
 						console.error("Error marking as reserved:", error);
@@ -533,7 +542,9 @@ async function handleItemAction(action: string, itemId: string) {
 				break;
 			case "mark-available":
 				{
-					const { error } = await updateItem(itemId, { status: "Available" });
+					const { error } = await updateItem(itemId, {
+						status: "Available",
+					});
 					if (error) {
 						toast.error("Failed to mark item as available.");
 						console.error("Error marking as available:", error);
