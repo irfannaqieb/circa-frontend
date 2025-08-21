@@ -14,9 +14,9 @@
 
 		<ProfileDropdown />
 
-		<h1 class="text-lg font-semibold text-muted-foreground mt-6 mb-2">
+		<NuxtLink to="/marketplace" class="text-lg font-semibold text-muted-foreground mt-6 mb-2 hover:text-primary transition-colors">
 			Marketplace
-		</h1>
+		</NuxtLink>
 		<NuxtLink to="/marketplace/item" class="mb-2">
 			<Button variant="outline" class="justify-start shadow-md">
 				<Plus class="w-4 h-4" />

@@ -75,8 +75,13 @@ import {
 	CarouselPrevious,
 } from "~/components/ui/carousel";
 import { useRouter } from "vue-router";
+import { useSessionStore } from "~/stores/session.store";
+import { computed } from "vue";
 
 const router = useRouter();
+const session = useSessionStore();
+
+const isLoggedIn = computed(() => !!session.user);
 
 const props = defineProps({
 	id: {
@@ -111,7 +116,11 @@ const props = defineProps({
 
 function viewDetails() {
 	if (props.id) {
-		router.push(`/marketplace/items/${props.id}`);
+		if (isLoggedIn.value) {
+			router.push(`/marketplace/items/${props.id}`);
+		} else {
+			router.push(`/login?redirect=/marketplace/items/${props.id}`);
+		}
 	}
 }
 </script>
