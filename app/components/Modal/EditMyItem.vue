@@ -215,10 +215,8 @@ import {
 import {
 	type Item,
 	type UpdateItem,
-	type Category,
 	type ItemStatus,
 	updateItem,
-	getCategories,
 	getImagesForItemIds,
 	deleteItemImage,
 	updateItemImage,
@@ -230,6 +228,8 @@ import {
 import { toast } from "vue-sonner";
 import { ImageIcon } from "lucide-vue-next";
 import { Skeleton } from "~/components/ui/skeleton";
+import { useCategoriesStore } from "~/stores/categories.store";
+import { storeToRefs } from "pinia";
 
 // Props and Emits
 const props = defineProps<{
@@ -244,7 +244,8 @@ const emit = defineEmits<{
 
 // Component State
 const form = ref<Partial<UpdateItem>>({});
-const categories = ref<Category[]>([]);
+const categoriesStore = useCategoriesStore();
+const { categories } = storeToRefs(categoriesStore);
 const loading = ref(false);
 const itemStatuses: ItemStatus[] = [
 	"Available",
@@ -398,16 +399,6 @@ async function handleRemoveImage(image: ItemImage) {
 	await loadItemImages();
 }
 
-async function loadCategories() {
-	const { data, error } = await getCategories();
-	if (error) {
-		console.error("Failed to load categories", error);
-		toast.error("Failed to load categories.");
-	} else {
-		categories.value = data || [];
-	}
-}
-
 async function handleSave() {
 	if (!props.item) return;
 
@@ -437,6 +428,6 @@ async function handleSave() {
 
 // Lifecycle Hooks
 onMounted(() => {
-	loadCategories();
+	categoriesStore.fetch();
 });
 </script>
