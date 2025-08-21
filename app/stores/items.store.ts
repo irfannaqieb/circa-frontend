@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import {
 	getItems,
+	getImagesForItemIds,
 	type Item,
 	type ItemsQueryOptions,
 } from "@/services/items.service";
@@ -41,6 +42,25 @@ export const useItemsStore = defineStore("items", {
 
 				if (error) {
 					throw error;
+				}
+
+				if (data && data.length > 0) {
+					const itemIds = data.map((item) => item.id);
+					const { data: images } = await getImagesForItemIds(itemIds);
+
+					if (images) {
+						const imageMap = new Map<string, any[]>();
+						images.forEach((image) => {
+							if (!imageMap.has(image.item_id)) {
+								imageMap.set(image.item_id, []);
+							}
+							imageMap.get(image.item_id)!.push(image);
+						});
+
+						data.forEach((item) => {
+							item.images = imageMap.get(item.id) || [];
+						});
+					}
 				}
 
 				this.items = data ?? [];

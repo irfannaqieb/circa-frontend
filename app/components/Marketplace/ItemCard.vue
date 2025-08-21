@@ -1,11 +1,22 @@
 <template>
 	<Card class="overflow-hidden max-w-sm gap-4">
-		<CardContent class="p-0">
+		<CardContent class="p-0 relative">
+			<Carousel v-if="images && images.length > 0">
+				<CarouselContent>
+					<CarouselItem v-for="(image, index) in images" :key="index">
+						<img
+							:src="image"
+							:alt="`${title || 'Product image'} ${index + 1}`"
+							class="h-48 w-full object-cover"
+						/>
+					</CarouselItem>
+				</CarouselContent>
+				<CarouselPrevious v-if="images.length > 1" class="absolute left-2" />
+				<CarouselNext v-if="images.length > 1" class="absolute right-2" />
+			</Carousel>
 			<img
-				:src="
-					image ||
-					'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=2899&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-				"
+				v-else
+				src="https://placehold.co/400x400.png?text=No+Image"
 				:alt="title || 'Product image'"
 				class="h-48 w-full object-cover"
 			/>
@@ -56,6 +67,13 @@ import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
 import BadgeItemStatus from "~/components/BadgeItemStatus.vue";
 import { Eye, ShoppingCart, MapPin } from "lucide-vue-next";
+import {
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
+} from "~/components/ui/carousel";
 
 const props = defineProps({
 	status: {
@@ -74,9 +92,9 @@ const props = defineProps({
 		type: String,
 		default: "New York, NY",
 	},
-	image: {
-		type: String,
-		default: "",
+	images: {
+		type: Array as () => string[],
+		default: () => [],
 	},
 	timeAgo: {
 		type: String,

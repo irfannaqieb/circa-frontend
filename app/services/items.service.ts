@@ -52,7 +52,7 @@ export type UpdateItem = Partial<
 export interface ItemsQueryOptions {
 	page?: number;
 	pageSize?: number;
-	category?: string;
+	categoryId?: string;
 	location?: string;
 	search?: string;
 	ownerId?: string;
@@ -94,10 +94,14 @@ export async function getItems(options: ItemsQueryOptions = {}) {
 	}
 
 	// filtering
-	if (options.category) query = query.eq("category", options.category);
+	if (options.categoryId) query = query.eq("category_id", options.categoryId);
 	if (options.location) query = query.eq("location", options.location);
 	if (options.ownerId) query = query.eq("owner_id", options.ownerId);
-	if (options.status) query = query.eq("status", options.status);
+	if (options.status) {
+		query = query.eq("status", options.status);
+	} else {
+		query = query.not("status", "eq", "Draft");
+	}
 
 	if (options.search) {
 		const term = `%${options.search}%`;

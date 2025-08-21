@@ -1,20 +1,30 @@
 <template>
 	<div class="mb-8">
 		<!-- Category Header -->
-		<div class="mb-8">
+		<div v-if="isLoading" class="mb-8">
+			<div class="flex items-center space-x-4 mb-4">
+				<Skeleton class="w-16 h-16 rounded-xl" />
+				<div class="space-y-2">
+					<Skeleton class="h-10 w-64" />
+					<Skeleton class="h-6 w-96" />
+				</div>
+			</div>
+		</div>
+		<div v-else-if="categoryData" class="mb-8">
 			<div class="flex items-center space-x-4 mb-4">
 				<div
 					class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center"
 				>
-					<component :is="categoryData?.icon" class="w-8 h-8 text-primary" />
+					<component
+						:is="ICONS[categoryData.icon_key!]"
+						v-if="categoryData.icon_key"
+						class="w-8 h-8 text-primary"
+					/>
 				</div>
 				<div>
 					<h1 class="text-4xl font-bold text-foreground">
 						{{ categoryData?.name }}
 					</h1>
-					<p class="text-lg text-muted-foreground">
-						{{ categoryData?.description }}
-					</p>
 				</div>
 			</div>
 
@@ -50,6 +60,17 @@
 		</div>
 
 		<div
+			v-if="isLoading"
+			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+		>
+			<div v-for="n in 8" :key="n" class="space-y-2">
+				<Skeleton class="h-48 w-full" />
+				<Skeleton class="h-4 w-3/4" />
+				<Skeleton class="h-4 w-1/2" />
+			</div>
+		</div>
+		<div
+			v-else-if="paginatedItems.length"
 			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
 		>
 			<MarketplaceItemCard
@@ -59,9 +80,12 @@
 				:title="item.title"
 				:price="item.price"
 				:location="item.location"
-				:image="item.image"
+				:images="item.images"
 				:timeAgo="item.timeAgo"
 			/>
+		</div>
+		<div v-else class="text-center py-12 text-muted-foreground">
+			No items found in this category.
 		</div>
 
 		<!-- Pagination -->
@@ -72,7 +96,10 @@
 				</span>
 			</div>
 
-			<div class="flex justify-center" v-if="totalItems > pageSize">
+			<div
+				v-if="!isLoading && totalItems > pageSize"
+				class="flex justify-center"
+			>
 				<Pagination
 					:page="currentPage"
 					:items-per-page="pageSize"
@@ -124,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import {
 	Smartphone,
 	Shirt,
@@ -135,6 +162,7 @@ import {
 	Car,
 } from "lucide-vue-next";
 import MarketplaceItemFilter from "~/components/Marketplace/ItemFilter.vue";
+import { Button } from "~/components/ui/button";
 import {
 	Pagination,
 	PaginationContent,
@@ -142,6 +170,12 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from "~/components/ui/pagination";
+import { useCategoriesStore } from "~/stores/categories.store";
+import { useItemsStore } from "~/stores/items.store";
+import { ICONS } from "~/lib/icon.map";
+import { Skeleton } from "~/components/ui/skeleton";
+import type { Item } from "~/services/items.service";
+import { getImageUrl } from "~/services/items.service";
 
 definePageMeta({
 	layout: "marketplace",
@@ -150,50 +184,25 @@ definePageMeta({
 const route = useRoute();
 const slug = route.params.slug as string;
 
-// Category data mapping
-const categoryMap = {
-	"electronics-gadgets": {
-		name: "Electronics & Gadgets",
-		icon: Smartphone,
-		description:
-			"Phones, laptops, accessories, and more tech gear for sale or rent.",
-	},
-	"clothing-accessories": {
-		name: "Clothing & Accessories",
-		icon: Shirt,
-		description:
-			"Fashion items, shoes, bags, and accessories from your wardrobe.",
-	},
-	"sports-outdoor": {
-		name: "Sports & Outdoor",
-		icon: Backpack,
-		description: "Sports equipment, outdoor gear, and fitness accessories.",
-	},
-	"home-garden": {
-		name: "Home & Garden",
-		icon: Home,
-		description:
-			"Furniture, decor, tools, and everything for your living space.",
-	},
-	"toys-games": {
-		name: "Toys & Games",
-		icon: Watch,
-		description: "Board games, video games, toys, and entertainment items.",
-	},
-	"books-magazines": {
-		name: "Books & Magazines",
-		icon: Book,
-		description: "Textbooks, novels, magazines, and educational materials.",
-	},
-	"cars-motorcycles": {
-		name: "Cars & Motorcycles",
-		icon: Car,
-		description: "Vehicles, car parts, and automotive accessories.",
-	},
-};
+const categoriesStore = useCategoriesStore();
+const itemsStore = useItemsStore();
 
-const categoryData = computed(
-	() => categoryMap[slug as keyof typeof categoryMap]
+onMounted(() => {
+	categoriesStore.fetch();
+});
+
+const categoryData = computed(() => {
+	return categoriesStore.categories.find((c) => c.slug === slug);
+});
+
+watch(
+	categoryData,
+	(newCategory) => {
+		if (newCategory) {
+			itemsStore.setFilters({ categoryId: newCategory.id });
+		}
+	},
+	{ immediate: true }
 );
 
 // Filter state
@@ -201,217 +210,43 @@ const filters = ref({
 	transactionType: "all",
 	location: "all",
 	availability: "any",
-	priceRange: [0, 1000] as [number, number],
+	priceRange: [0, 10000000] as [number, number],
 	onlyAvailable: false,
 	onlyFree: false,
 });
 
-// Sample data for different categories
-const mockItems = {
-	"electronics-gadgets": [
-		{
-			id: "1",
-			title: "iPhone 14 Pro",
-			price: "$800",
-			priceValue: 800,
-			location: "Campus",
-			status: "Available",
-			transactionType: "sell",
-			image:
-				"https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400",
-			timeAgo: "2 hours ago",
-		},
-		{
-			id: "2",
-			title: "MacBook Air M2",
-			price: "$1200",
-			priceValue: 1200,
-			location: "North",
-			status: "Reserved",
-			transactionType: "sell",
-			image:
-				"https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400",
-			timeAgo: "5 hours ago",
-		},
-		{
-			id: "3",
-			title: 'iPad Pro 11"',
-			price: "$600",
-			priceValue: 600,
-			location: "South",
-			status: "Available",
-			transactionType: "borrow",
-			image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
-			timeAgo: "1 day ago",
-		},
-		{
-			id: "4",
-			title: "AirPods Pro",
-			price: "Free",
-			priceValue: 0,
-			location: "Campus",
-			status: "Available",
-			transactionType: "giveaway",
-			image:
-				"https://images.unsplash.com/photo-1606841837239-c5a1c32d4e0a?w=400",
-			timeAgo: "2 days ago",
-		},
-		{
-			id: "5",
-			title: "Gaming Headset",
-			price: "$120",
-			priceValue: 120,
-			location: "North",
-			status: "Available",
-			transactionType: "borrow",
-			image:
-				"https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400",
-			timeAgo: "3 hours ago",
-		},
-	],
-	"clothing-accessories": [
-		{
-			id: "6",
-			title: "Designer Handbag",
-			price: "$150",
-			priceValue: 150,
-			location: "Campus",
-			status: "Available",
-			transactionType: "sell",
-			image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400",
-			timeAgo: "3 hours ago",
-		},
-		{
-			id: "7",
-			title: "Vintage Leather Jacket",
-			price: "$120",
-			priceValue: 120,
-			location: "North",
-			status: "Available",
-			transactionType: "sell",
-			image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400",
-			timeAgo: "6 hours ago",
-		},
-		{
-			id: "8",
-			title: "Running Shoes Nike",
-			price: "Free",
-			priceValue: 0,
-			location: "South",
-			status: "Available",
-			transactionType: "giveaway",
-			image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
-			timeAgo: "1 day ago",
-		},
-	],
-	"sports-outdoor": [
-		{
-			id: "9",
-			title: "Mountain Bike",
-			price: "$300",
-			priceValue: 300,
-			location: "Campus",
-			status: "Available",
-			transactionType: "borrow",
-			image: "https://images.unsplash.com/photo-1544191696-15693072b41b?w=400",
-			timeAgo: "4 hours ago",
-		},
-		{
-			id: "10",
-			title: "Tennis Racket",
-			price: "$45",
-			priceValue: 45,
-			location: "North",
-			status: "Available",
-			transactionType: "sell",
-			image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400",
-			timeAgo: "8 hours ago",
-		},
-	],
-	"home-garden": [
-		{
-			id: "11",
-			title: "Desk Lamp",
-			price: "$25",
-			priceValue: 25,
-			location: "Campus",
-			status: "Available",
-			transactionType: "sell",
-			image:
-				"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-			timeAgo: "1 hour ago",
-		},
-		{
-			id: "12",
-			title: "Office Chair",
-			price: "Free",
-			priceValue: 0,
-			location: "South",
-			status: "Available",
-			transactionType: "giveaway",
-			image:
-				"https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400",
-			timeAgo: "3 hours ago",
-		},
-	],
-	"toys-games": [
-		{
-			id: "13",
-			title: "Board Game Collection",
-			price: "$60",
-			priceValue: 60,
-			location: "Campus",
-			status: "Available",
-			transactionType: "borrow",
-			image:
-				"https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=400",
-			timeAgo: "2 hours ago",
-		},
-	],
-	"books-magazines": [
-		{
-			id: "14",
-			title: "Computer Science Textbook",
-			price: "$40",
-			priceValue: 40,
-			location: "Campus",
-			status: "Available",
-			transactionType: "sell",
-			image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400",
-			timeAgo: "1 hour ago",
-		},
-		{
-			id: "15",
-			title: "Science Fiction Novels",
-			price: "Free",
-			priceValue: 0,
-			location: "North",
-			status: "Available",
-			transactionType: "giveaway",
-			image:
-				"https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400",
-			timeAgo: "4 hours ago",
-		},
-	],
-	"cars-motorcycles": [
-		{
-			id: "16",
-			title: "Used Honda Civic",
-			price: "$8500",
-			priceValue: 8500,
-			location: "North",
-			status: "Available",
-			transactionType: "sell",
-			image:
-				"https://images.unsplash.com/photo-1494976688202-2094b06f5b72?w=400",
-			timeAgo: "1 day ago",
-		},
-	],
-};
+const categoryItems = computed((): Item[] => {
+	return itemsStore.items;
+});
+
+const formattedItems = computed(() => {
+	return categoryItems.value.map((item) => {
+		const priceValue = item.is_giveaway ? 0 : item.base_price_minor || 0;
+		const transactionType = item.is_giveaway ? "giveaway" : "sell";
+		const images =
+			Array.isArray(item.images) && item.images.length > 0
+				? item.images
+						.sort((a, b) => a.position - b.position)
+						.map((img) => getImageUrl(img.path))
+				: [];
+
+		return {
+			id: item.id,
+			title: item.title,
+			price: priceValue === 0 ? "Free" : `₩${priceValue.toLocaleString()}`,
+			priceValue: priceValue,
+			location: item.location || "N/A",
+			status: item.status || "Available",
+			transactionType: transactionType,
+			images: images,
+			timeAgo: new Date(item.created_at!).toLocaleDateString(),
+		};
+	});
+});
 
 // Get items for current category with filters applied
 const filteredItems = computed(() => {
-	let items = mockItems[slug as keyof typeof mockItems] || [];
+	let items = formattedItems.value;
 
 	// Apply transaction type filter
 	if (filters.value.transactionType !== "all") {
@@ -473,6 +308,8 @@ const paginatedItems = computed(() => {
 	const end = start + pageSize.value;
 	return filteredItems.value.slice(start, end);
 });
+
+const isLoading = computed(() => categoriesStore.loading || itemsStore.loading);
 </script>
 
 <style scoped></style>
