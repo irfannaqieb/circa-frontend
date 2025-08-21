@@ -37,6 +37,76 @@
 					</div>
 				</div>
 
+				<!-- Photos Section -->
+				<div class="space-y-4 pt-4 border-t">
+					<div class="space-y-2">
+						<Label>Photos</Label>
+						<p class="text-sm text-muted-foreground">
+							Manage images for your item. The first image is the primary one.
+						</p>
+					</div>
+
+					<!-- Loading Skeleton -->
+					<div v-if="loadingImages" class="grid grid-cols-3 gap-4">
+						<Skeleton class="h-24 w-full" v-for="i in 3" :key="i" />
+					</div>
+
+					<!-- Image Previews -->
+					<div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
+						<!-- Existing Images -->
+						<div
+							v-for="image in itemImages"
+							:key="image.id"
+							class="relative group"
+						>
+							<img
+								:src="getImageUrl(image.path)"
+								:alt="`Item image ${image.position}`"
+								class="w-full h-24 object-cover rounded-lg border"
+							/>
+							<button
+								type="button"
+								@click="handleRemoveImage(image)"
+								class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+							>
+								×
+							</button>
+							<div
+								v-if="image.is_primary"
+								class="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-0.5 rounded"
+							>
+								Primary
+							</div>
+						</div>
+
+						<!-- New Image Uploads -->
+						<div
+							v-if="itemImages.length < maxImages"
+							class="border-2 border-dashed border-muted-foreground/25 rounded-lg h-24 flex items-center justify-center hover:border-muted-foreground/50 transition-colors cursor-pointer"
+							@click="triggerImageUpload"
+						>
+							<div class="text-center">
+								<ImageIcon
+									class="w-8 h-8 mx-auto text-muted-foreground/50 mb-1"
+								/>
+								<span class="text-xs text-muted-foreground">Add Photo</span>
+							</div>
+						</div>
+					</div>
+					<input
+						type="file"
+						multiple
+						accept="image/*"
+						@change="handleImageSelect"
+						class="hidden"
+						id="edit-image-upload"
+						:disabled="isUploading"
+					/>
+					<p v-if="isUploading" class="text-sm text-muted-foreground">
+						Uploading images...
+					</p>
+				</div>
+
 				<!-- Description -->
 				<div class="space-y-2">
 					<Label for="description">Description</Label>
@@ -149,8 +219,17 @@ import {
 	type ItemStatus,
 	updateItem,
 	getCategories,
+	getImagesForItemIds,
+	deleteItemImage,
+	updateItemImage,
+	uploadImage,
+	createItemImage,
+	getImageUrl,
+	type ItemImage,
 } from "~/services/items.service";
 import { toast } from "vue-sonner";
+import { ImageIcon } from "lucide-vue-next";
+import { Skeleton } from "~/components/ui/skeleton";
 
 // Props and Emits
 const props = defineProps<{
@@ -174,6 +253,10 @@ const itemStatuses: ItemStatus[] = [
 	"Draft",
 	"Archived",
 ];
+const itemImages = ref<ItemImage[]>([]);
+const loadingImages = ref(false);
+const isUploading = ref(false);
+const maxImages = 5;
 
 // Watch for prop changes to initialize form
 watch(
@@ -189,6 +272,9 @@ watch(
 				condition: newItem.condition,
 				status: newItem.status,
 			};
+			loadItemImages();
+		} else {
+			itemImages.value = [];
 		}
 	},
 	{ immediate: true }
@@ -206,6 +292,108 @@ watch(
 );
 
 // Methods
+async function loadItemImages() {
+	if (!props.item) return;
+	loadingImages.value = true;
+	try {
+		const { data, error } = await getImagesForItemIds([props.item.id]);
+		if (error) {
+			toast.error("Failed to load item images.");
+		} else {
+			itemImages.value = data || [];
+		}
+	} finally {
+		loadingImages.value = false;
+	}
+}
+
+function triggerImageUpload() {
+	document.getElementById("edit-image-upload")?.click();
+}
+
+async function handleImageSelect(event: Event) {
+	const target = event.target as HTMLInputElement;
+	const files = Array.from(target.files || []);
+	if (files.length === 0) return;
+
+	if (itemImages.value.length + files.length > maxImages) {
+		toast.error(`You can only upload up to ${maxImages} images.`);
+		return;
+	}
+
+	isUploading.value = true;
+	try {
+		for (const file of files) {
+			await uploadAndCreateImage(file);
+		}
+		toast.success(`${files.length} image(s) uploaded successfully.`);
+	} catch (error) {
+		toast.error("An error occurred during upload.");
+	} finally {
+		isUploading.value = false;
+		target.value = "";
+		await loadItemImages();
+	}
+}
+
+async function uploadAndCreateImage(file: File) {
+	if (!props.item) return;
+
+	const { data: filePath, error: uploadError } = await uploadImage(
+		file,
+		props.item.id
+	);
+	if (uploadError || !filePath) {
+		throw new Error("Failed to upload image to storage.");
+	}
+
+	const nextPosition =
+		itemImages.value.length > 0
+			? Math.max(...itemImages.value.map((img) => img.position)) + 1
+			: 1;
+
+	const isPrimary = itemImages.value.length === 0;
+
+	const { error: dbError } = await createItemImage(
+		props.item.id,
+		filePath,
+		nextPosition,
+		isPrimary
+	);
+	if (dbError) {
+		throw new Error("Failed to save image reference.");
+	}
+}
+
+async function handleRemoveImage(image: ItemImage) {
+	if (!props.item) return;
+
+	const { ok, error } = await deleteItemImage(image.id);
+	if (!ok || error) {
+		toast.error("Failed to delete image.");
+		console.error("Error deleting image:", error);
+		return;
+	}
+
+	toast.success("Image deleted.");
+
+	const remainingImages = itemImages.value.filter((i) => i.id !== image.id);
+
+	if (image.is_primary && remainingImages.length > 0) {
+		remainingImages.sort((a, b) => a.position - b.position);
+		const newPrimary = remainingImages[0];
+
+		const { error: updateError } = await updateItemImage(newPrimary.id, {
+			is_primary: true,
+		});
+		if (updateError) {
+			toast.error("Failed to set new primary image. Please set one manually.");
+		}
+	}
+
+	await loadItemImages();
+}
+
 async function loadCategories() {
 	const { data, error } = await getCategories();
 	if (error) {
