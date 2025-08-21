@@ -18,7 +18,12 @@ export interface ItemImage {
 	updated_at?: string;
 }
 
-export type ItemStatus = "Available" | "Reserved" | "Sold";
+export type ItemStatus =
+	| "Available"
+	| "Reserved"
+	| "Sold"
+	| "Draft"
+	| "Archived";
 
 export interface Item {
 	id: string;
@@ -37,6 +42,14 @@ export interface Item {
 	original_price_minor?: number | null;
 	base_currency: string;
 	base_price_minor?: number | null;
+	// Additional fields for my-listings functionality
+	primary_image_path?: string | null;
+	images?: ItemImage[];
+	is_boosted?: boolean | null;
+	is_featured?: boolean | null;
+	views?: number | null;
+	saves?: number | null;
+	messages?: number | null;
 }
 
 export type InsertItem = Omit<Item, "id" | "created_at" | "updated_at">;
@@ -126,6 +139,14 @@ export async function getItem(id: string) {
 }
 
 function checkPriceConsistency(input: Partial<Item>) {
+	const hasPriceFields =
+		"is_giveaway" in input ||
+		"original_price_minor" in input ||
+		"base_price_minor" in input;
+
+	if (!hasPriceFields) {
+		return;
+	}
 	const isGiveaway = !!input.is_giveaway;
 	const opm = input.original_price_minor ?? null;
 	const bpm = input.base_price_minor ?? null;
@@ -252,10 +273,85 @@ export async function getItemImages(itemId: string) {
 	};
 }
 
+// update a row in the item_images table
+export async function updateItemImage(
+	imageId: string,
+	updates: Partial<{ is_primary: boolean; position: number }>
+) {
+	const client = getClient();
+	const { data, error } = await client
+		.from("item_images")
+		.update(updates)
+		.eq("id", imageId)
+		.select()
+		.single();
+	return {
+		data: data as ItemImage | null,
+		error: error as PostgrestError | null,
+	};
+}
+
+// delete an image, from storage and database
+export async function deleteItemImage(imageId: string) {
+	const client = getClient();
+
+	// First, get the image path to delete it from storage
+	const { data: image, error: getError } = await client
+		.from("item_images")
+		.select("path, item_id")
+		.eq("id", imageId)
+		.single();
+
+	if (getError || !image) {
+		console.error("Could not retrieve image to delete", getError);
+		return { ok: false, error: getError };
+	}
+
+	// Delete from storage
+	const { error: storageError } = await client.storage
+		.from("item-images")
+		.remove([image.path]);
+	if (storageError) {
+		// Log error but continue to delete from database
+		console.error("Error deleting image from storage:", storageError);
+	}
+
+	// Delete from database
+	const { error: dbError } = await client
+		.from("item_images")
+		.delete()
+		.eq("id", imageId);
+
+	if (dbError) {
+		return { ok: false, error: dbError };
+	}
+
+	return { ok: true, error: null };
+}
+
 // get public URL for an image
 export function getImageUrl(path: string): string {
 	const client = getClient();
 	const { data } = client.storage.from("item-images").getPublicUrl(path);
 
 	return data.publicUrl;
+}
+
+// get all images for a list of item IDs
+export async function getImagesForItemIds(itemIds: string[]) {
+	if (!itemIds || itemIds.length === 0) {
+		return { data: [], error: null };
+	}
+
+	const client = getClient();
+	const { data, error } = await client
+		.from("item_images")
+		.select("id, item_id, path, is_primary, position")
+		.in("item_id", itemIds)
+		.order("position", { ascending: true });
+
+	return {
+		data: data as ItemImage[] | null,
+		error: error as PostgrestError | null,
+	};
 }
