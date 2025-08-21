@@ -1,6 +1,6 @@
 # ---------- Base (dependencies layer) ----------
 FROM node:20-alpine AS base
-WORKDIR /app
+WORKDIR /src
 
 # Install dependencies (cache this layer)
 COPY package.json package-lock.json ./
@@ -32,14 +32,14 @@ RUN npm run build
 
 # ---------- Production runtime ----------
 FROM node:20-alpine AS prod
-WORKDIR /app
+WORKDIR /src
 ENV NODE_ENV=production \
     NITRO_HOST=0.0.0.0 \
     HOST=0.0.0.0 \
     PORT=3000
 
 # Copy only the build artifacts from the build stage
-COPY --from=build /app/.output ./.output
+COPY --from=build /src/.output ./.output
 
 EXPOSE 3000
 
