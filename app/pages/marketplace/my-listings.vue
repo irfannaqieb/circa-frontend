@@ -295,17 +295,17 @@ import { Pagination } from "~/components/ui/pagination";
 
 import {
 	getItems,
-	getCategories,
 	updateItem,
 	deleteItem,
 	getImagesForItemIds,
 	type Item,
 	type ItemsQueryOptions,
-	type Category,
 	type ItemStatus,
 } from "~/services/items.service";
 import { useSessionStore } from "~/stores/session.store";
+import { useCategoriesStore } from "~/stores/categories.store";
 import { toast } from "vue-sonner";
+import { storeToRefs } from "pinia";
 
 // Page metadata
 definePageMeta({
@@ -319,7 +319,8 @@ const router = useRouter();
 
 // Data state
 const items = ref<Item[]>([]);
-const categories = ref<Category[]>([]);
+const categoriesStore = useCategoriesStore();
+const { categories } = storeToRefs(categoriesStore);
 const loading = ref(true);
 const totalItems = ref(0);
 const currentPage = ref(1);
@@ -473,19 +474,6 @@ async function loadItems() {
 		toast.error("Failed to load your listings");
 	} finally {
 		loading.value = false;
-	}
-}
-
-async function loadCategories() {
-	try {
-		const { data, error } = await getCategories();
-		if (error) {
-			console.error("Error loading categories:", error);
-			return;
-		}
-		categories.value = data || [];
-	} catch (error) {
-		console.error("Error loading categories:", error);
 	}
 }
 
@@ -648,7 +636,7 @@ watchDebounced(
 onMounted(async () => {
 	await sessionStore.initialize();
 	if (sessionStore.isAuthenticated) {
-		await Promise.all([loadCategories(), loadItems()]);
+		await Promise.all([categoriesStore.fetch(), loadItems()]);
 	}
 });
 </script>
