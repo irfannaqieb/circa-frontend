@@ -383,11 +383,15 @@ async function handleRemoveImage(image: ItemImage) {
 		remainingImages.sort((a, b) => a.position - b.position);
 		const newPrimary = remainingImages[0];
 
-		const { error: updateError } = await updateItemImage(newPrimary.id, {
-			is_primary: true,
-		});
-		if (updateError) {
-			toast.error("Failed to set new primary image. Please set one manually.");
+		if (newPrimary) {
+			const { error: updateError } = await updateItemImage(newPrimary.id, {
+				is_primary: true,
+			});
+			if (updateError) {
+				toast.error(
+					"Failed to set new primary image. Please set one manually."
+				);
+			}
 		}
 	}
 
