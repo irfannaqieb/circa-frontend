@@ -366,18 +366,22 @@ import {
 } from "~/components/ui/form";
 import {
 	createItem,
-	getCategories,
 	uploadImage,
 	createItemImage,
 	type InsertItem,
-	type Category,
 } from "~/services/items.service";
 import { useSessionStore } from "~/stores/session.store";
+import { useCategoriesStore } from "~/stores/categories.store";
 import { toast } from "vue-sonner";
+import { storeToRefs } from "pinia";
 
-// Load categories from database
-const categories = ref<Category[]>([]);
-const categoriesLoading = ref(true);
+// Load categories from store
+const categoriesStore = useCategoriesStore();
+const {
+	categories,
+	loading: categoriesLoading,
+	error: categoriesError,
+} = storeToRefs(categoriesStore);
 
 // Image handling
 const selectedImages = ref<File[]>([]);
@@ -437,28 +441,12 @@ const sessionStore = useSessionStore();
 // Initialize session and load categories on page load
 onMounted(async () => {
 	await sessionStore.initialize();
-	await loadCategories();
-});
+	await categoriesStore.fetch();
 
-// Load categories from database
-async function loadCategories() {
-	try {
-		const { data, error } = await getCategories();
-		if (error) {
-			console.error("Error loading categories:", error);
-			toast.error("Failed to load categories");
-			return;
-		}
-		if (data) {
-			categories.value = data;
-		}
-	} catch (error) {
-		console.error("Unexpected error loading categories:", error);
-		toast.error("Failed to load categories");
-	} finally {
-		categoriesLoading.value = false;
+	if (categoriesError.value) {
+		toast.error(categoriesError.value);
 	}
-}
+});
 
 // Handle image selection
 function handleImageSelect(event: Event) {
