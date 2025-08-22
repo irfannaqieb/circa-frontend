@@ -10,6 +10,10 @@
 import { onMounted } from "vue";
 import { useSessionStore } from "@/stores/session.store";
 
+definePageMeta({
+	scrollToTop: false,
+});
+
 const session = useSessionStore();
 
 onMounted(async () => {

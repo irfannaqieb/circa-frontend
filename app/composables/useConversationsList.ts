@@ -119,7 +119,7 @@ export function useConversationsList() {
 
 							const route = useRoute();
 							const isViewingThisChat =
-								route.path === `/chat/${conversationId}`;
+								route.path === `/marketplace/chat/${conversationId}`;
 
 							if (newMessage.sender_id !== user?.id && !isViewingThisChat) {
 								entry.unread_count += 1;

@@ -42,24 +42,36 @@
 
 			<!-- Right side - Action buttons -->
 			<div class="flex items-center space-x-4">
-				<template v-if="!session.isAuthenticated">
-					<Button variant="outline" size="sm" @click="handleBecomeSeller">
-						Become a seller
-					</Button>
-					<Button size="sm" :disabled="session.loading" @click="openLoginModal">
-						{{ session.loading ? "Signing in…" : "Sign in" }}
-					</Button>
-				</template>
-				<template v-else>
-					<Button
-						size="sm"
-						variant="secondary"
-						:disabled="session.loading"
-						@click="handleLogout"
-					>
-						{{ session.loading ? "Signing out…" : "Sign out" }}
-					</Button>
-				</template>
+				<ClientOnly>
+					<template v-if="!session.isAuthenticated">
+						<Button variant="outline" size="sm" @click="handleBecomeSeller">
+							Become a seller
+						</Button>
+						<Button
+							size="sm"
+							:disabled="session.loading"
+							@click="openLoginModal"
+						>
+							{{ session.loading ? "Signing in…" : "Sign in" }}
+						</Button>
+					</template>
+					<template v-else>
+						<Button
+							size="sm"
+							variant="secondary"
+							:disabled="session.loading"
+							@click="handleLogout"
+						>
+							{{ session.loading ? "Signing out…" : "Sign out" }}
+						</Button>
+					</template>
+					<template #fallback>
+						<div class="flex items-center space-x-4">
+							<Skeleton class="h-8 w-28" />
+							<Skeleton class="h-8 w-20" />
+						</div>
+					</template>
+				</ClientOnly>
 			</div>
 
 			<!-- Mobile menu button -->
@@ -102,35 +114,43 @@
 				</NuxtLink>
 
 				<div class="flex flex-col space-y-2 pt-4">
-					<template v-if="!session.isAuthenticated">
-						<Button
-							variant="outline"
-							size="sm"
-							class="w-full"
-							@click="handleBecomeSeller"
-						>
-							Become a seller
-						</Button>
-						<Button
-							size="sm"
-							class="w-full"
-							:disabled="session.loading"
-							@click="openLoginModal"
-						>
-							{{ session.loading ? "Signing in…" : "Sign in" }}
-						</Button>
-					</template>
-					<template v-else>
-						<Button
-							size="sm"
-							variant="secondary"
-							class="w-full"
-							:disabled="session.loading"
-							@click="handleLogout"
-						>
-							{{ session.loading ? "Signing out…" : "Sign out" }}
-						</Button>
-					</template>
+					<ClientOnly>
+						<template v-if="!session.isAuthenticated">
+							<Button
+								variant="outline"
+								size="sm"
+								class="w-full"
+								@click="handleBecomeSeller"
+							>
+								Become a seller
+							</Button>
+							<Button
+								size="sm"
+								class="w-full"
+								:disabled="session.loading"
+								@click="openLoginModal"
+							>
+								{{ session.loading ? "Signing in…" : "Sign in" }}
+							</Button>
+						</template>
+						<template v-else>
+							<Button
+								size="sm"
+								variant="secondary"
+								class="w-full"
+								:disabled="session.loading"
+								@click="handleLogout"
+							>
+								{{ session.loading ? "Signing out…" : "Sign out" }}
+							</Button>
+						</template>
+						<template #fallback>
+							<div class="flex flex-col space-y-2">
+								<Skeleton class="h-9 w-full" />
+								<Skeleton class="h-9 w-full" />
+							</div>
+						</template>
+					</ClientOnly>
 				</div>
 			</div>
 		</div>
@@ -146,6 +166,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import Button from "~/components/ui/button/Button.vue";
+import Skeleton from "~/components/ui/skeleton/Skeleton.vue";
 import { useSessionStore } from "@/stores/session.store";
 const route = useRoute();
 
