@@ -41,8 +41,14 @@
 				>
 					<div class="flex items-start gap-3 max-w-md">
 						<Avatar v-if="message.sender_id !== user?.id" class="w-8 h-8">
-							<!-- <AvatarImage src="/placeholder-avatar.jpg" /> -->
-							<AvatarFallback> O </AvatarFallback>
+							<AvatarImage
+								v-if="peer?.peer_avatar"
+								:src="peer.peer_avatar ?? ''"
+								:alt="peer?.peer_name ?? 'User'"
+							/>
+							<AvatarFallback>
+								{{ peer?.peer_name ? getInitials(peer.peer_name) : "" }}
+							</AvatarFallback>
 						</Avatar>
 						<div class="flex-grow">
 							<!-- Item Inquiry or Offer Card -->
@@ -471,6 +477,15 @@ const formatSystemMessage = (message: MessageRow): string => {
 
 	return message.body;
 };
+
+function getInitials(name: string): string {
+	return name
+		.split(" ")
+		.filter((n) => n)
+		.map((n) => n[0]!)
+		.join("")
+		.toUpperCase();
+}
 
 const handleSendText = async () => {
 	if (newMessage.value.trim() && user.value && !sending.value) {
