@@ -151,18 +151,62 @@
 							@click="handleChatWithSeller"
 						>
 							<MessageCircle class="w-4 h-4 mr-2" />
-							<span v-if="chatLoading">Starting...</span>
+							<span v-if="chatLoading && !offerPrice">Starting...</span>
 							<span v-else>Chat with Seller</span>
 						</Button>
-						<Button
-							variant="secondary"
-							:disabled="!canChat || chatLoading || item.is_giveaway"
-							@click="handleMakeOffer"
-						>
-							<Tag class="w-4 h-4 mr-2" />
-							<span v-if="chatLoading">Starting...</span>
-							<span v-else>Make Offer</span>
-						</Button>
+						<Popover>
+							<PopoverTrigger as-child>
+								<Button
+									variant="secondary"
+									:disabled="!canChat || chatLoading || item.is_giveaway"
+								>
+									<Tag class="w-4 h-4 mr-2" />
+									Make Offer
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent class="w-80">
+								<div class="grid gap-4">
+									<div class="space-y-2">
+										<h4 class="font-medium leading-none">Make an Offer</h4>
+										<p class="text-sm text-muted-foreground">
+											Adjust the slider or enter a price directly.
+										</p>
+									</div>
+									<div class="grid gap-2">
+										<div class="flex items-center gap-2 pt-2">
+											<Slider
+												:default-value="[item.base_price_minor || 50000]"
+												:max="
+													item.base_price_minor
+														? item.base_price_minor * 2
+														: 1000000
+												"
+												:step="1000"
+												class="w-full"
+												@value-change="handleSliderChange"
+											/>
+										</div>
+										<div class="text-center font-semibold text-lg">
+											₩{{ offerPrice ? offerPrice.toLocaleString() : "0" }}
+										</div>
+										<div class="grid grid-cols-3 items-center gap-4">
+											<Label for="price" class="text-sm">Price</Label>
+											<Input
+												id="price"
+												v-model="offerPriceModel"
+												type="text"
+												class="col-span-2 h-8"
+												placeholder="e.g. 10,000"
+											/>
+										</div>
+										<Button @click="handleOfferSubmit" :disabled="chatLoading">
+											<span v-if="chatLoading">Sending...</span>
+											<span v-else>Send Offer</span>
+										</Button>
+									</div>
+								</div>
+							</PopoverContent>
+						</Popover>
 						<Button variant="secondary">
 							<Heart class="w-4 h-4 mr-2" /> Save
 						</Button>
@@ -286,6 +330,14 @@ import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { getProfileById, type Profile } from "~/services/profiles.service";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "~/components/ui/popover";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Slider } from "~/components/ui/slider";
 import { getOrCreateConversation } from "~/services/conversations.service";
 import { useSessionStore } from "~/stores/session.store";
 
@@ -324,8 +376,21 @@ const item = ref<
 >(null);
 const loading = ref(true);
 const sellerProfile = ref<Profile | null>(null);
+const offerPrice = ref<number | null>(null);
 
 const selectedImage = ref<ItemImage | null>(null);
+
+const offerPriceModel = computed({
+	get: () => offerPrice.value?.toLocaleString() ?? "",
+	set: (val: string) => {
+		const numberVal = parseInt(val.replace(/,/g, ""), 10);
+		if (!isNaN(numberVal)) {
+			offerPrice.value = numberVal;
+		} else if (val === "") {
+			offerPrice.value = null;
+		}
+	},
+});
 
 // Chat functionality
 const chatLoading = ref(false);
@@ -346,6 +411,11 @@ const canChat = computed(() => {
 });
 
 // Handler functions
+const handleSliderChange = (value: number[]) => {
+	const firstValue = value[0];
+	offerPrice.value = firstValue !== undefined ? firstValue : null;
+};
+
 const handleChatWithSeller = async () => {
 	if (!currentUser.value || !item.value || !item.value.owner_id) {
 		toast.error("Please log in to chat with the seller.");
@@ -374,7 +444,9 @@ const handleChatWithSeller = async () => {
 		}
 
 		if (conversationId) {
-			await router.push(`/chat/${conversationId}?itemId=${item.value.id}`);
+			await router.push(
+				`/marketplace/chat/${conversationId}?itemId=${item.value.id}&inquire=true`
+			);
 		}
 	} catch (err) {
 		console.error("Error starting chat:", err);
@@ -390,7 +462,11 @@ const handleBuyNow = async () => {
 	await handleChatWithSeller();
 };
 
-const handleMakeOffer = async () => {
+const handleOfferSubmit = async () => {
+	if (!offerPrice.value || offerPrice.value <= 0) {
+		toast.error("Please enter a valid offer amount.");
+		return;
+	}
 	if (!currentUser.value || !item.value || !item.value.owner_id) {
 		toast.error("Please log in to make an offer.");
 		return;
@@ -420,7 +496,7 @@ const handleMakeOffer = async () => {
 		if (conversationId) {
 			// Navigate to chat page with a special flag to open offer dialog
 			await router.push(
-				`/chat/${conversationId}?itemId=${item.value.id}&openOffer=true`
+				`/marketplace/chat/${conversationId}?itemId=${item.value.id}&action=makeOffer&price=${offerPrice.value}&inquire=true`
 			);
 		}
 	} catch (err) {
@@ -428,6 +504,7 @@ const handleMakeOffer = async () => {
 		toast.error("An unexpected error occurred. Please try again.");
 	} finally {
 		chatLoading.value = false;
+		offerPrice.value = null;
 	}
 };
 
