@@ -1,0 +1,286 @@
+import { ref, onUnmounted, computed } from "vue";
+import { useSessionStore } from "~/stores/session.store";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+
+type MessageKind = "text" | "offer";
+
+export type MessageRow = {
+	id: string;
+	conversation_id: string;
+	sender_id: string;
+	kind: MessageKind;
+	body: string | null;
+	offer_id: string | null;
+	created_at: string;
+	offers?: OfferRow | null;
+};
+
+export type OfferRow = {
+	id: string;
+	conversation_id: string;
+	item_id: string;
+	maker_id: string;
+	price_cents: number;
+	currency: string; // 'KRW'
+	status: "pending" | "accepted" | "declined" | "expired";
+	expires_at: string | null;
+	created_at: string;
+};
+
+export function useChat(conversationId: string, itemId: string) {
+	const { $supabase: supabase } = useNuxtApp();
+	const sessionStore = useSessionStore();
+	const user = computed(() => sessionStore.session?.user);
+
+	const messages = ref<MessageRow[]>([]);
+	const typing = ref<Record<string, boolean>>({});
+
+	const fetchMessages = async () => {
+		const { data, error } = await supabase
+			.from("messages")
+			.select("*, offers:offer_id(*)")
+			.eq("conversation_id", conversationId)
+			.order("created_at", { ascending: false })
+			.limit(50);
+
+		if (error) {
+			console.error("Error fetching messages:", error);
+			return;
+		}
+		messages.value = data.reverse() as MessageRow[];
+	};
+
+	const sendText = async (body: string) => {
+		if (!user.value) {
+			return;
+		}
+
+		const tempId = `temp-${Date.now()}`;
+		const optimisticMessage: MessageRow = {
+			id: tempId,
+			conversation_id: conversationId,
+			sender_id: user.value.id,
+			kind: "text",
+			body,
+			offer_id: null,
+			created_at: new Date().toISOString(),
+		};
+
+		messages.value.push(optimisticMessage);
+
+		const messageData = {
+			conversation_id: conversationId,
+			sender_id: user.value.id,
+			kind: "text",
+			body,
+		};
+
+		const { data, error } = await supabase
+			.from("messages")
+			.insert(messageData)
+			.select()
+			.single();
+
+		if (error) {
+			messages.value = messages.value.filter((m) => m.id !== tempId);
+			throw error;
+		} else {
+			const index = messages.value.findIndex((m) => m.id === tempId);
+			if (index !== -1) {
+				messages.value[index] = data as MessageRow;
+			}
+		}
+	};
+
+	const makeOffer = async (
+		price: number,
+		currency = "KRW",
+		expiresAt?: string
+	) => {
+		if (!user.value) {
+			console.error("❌ Cannot make offer: User not authenticated");
+			return;
+		}
+
+		// --- Optimistic Update ---
+		const tempOfferId = `temp-offer-${Date.now()}`;
+		const tempMessageId = `temp-message-${Date.now()}`;
+		const now = new Date().toISOString();
+
+		const optimisticOffer: OfferRow = {
+			id: tempOfferId,
+			conversation_id: conversationId,
+			item_id: itemId,
+			maker_id: user.value.id,
+			price_cents: price, // FIX: Storing the raw value for KRW
+			currency: currency,
+			status: "pending",
+			expires_at: expiresAt || null,
+			created_at: now,
+		};
+
+		const optimisticMessage: MessageRow = {
+			id: tempMessageId,
+			conversation_id: conversationId,
+			sender_id: user.value.id,
+			kind: "offer",
+			body: null,
+			offer_id: tempOfferId,
+			created_at: now,
+			offers: optimisticOffer,
+		};
+
+		messages.value.push(optimisticMessage);
+		// --- End Optimistic Update ---
+
+		try {
+			// Step 1: Create the actual offer
+			const { data: offer, error: offerError } = await supabase
+				.from("offers")
+				.insert({
+					conversation_id: conversationId,
+					item_id: itemId,
+					maker_id: user.value.id,
+					price_cents: price, // FIX: Storing the raw value for KRW
+				})
+				.select()
+				.single();
+
+			if (offerError) throw offerError;
+
+			// Step 2: Create the message linking to the offer
+			const { data: message, error: messageError } = await supabase
+				.from("messages")
+				.insert({
+					conversation_id: conversationId,
+					sender_id: user.value.id,
+					kind: "offer",
+					offer_id: offer.id,
+				})
+				.select("*, offers:offer_id(*)")
+				.single();
+
+			if (messageError) throw messageError;
+
+			// Step 3: Reconcile
+			const index = messages.value.findIndex((m) => m.id === tempMessageId);
+			if (index !== -1) {
+				messages.value[index] = message as MessageRow;
+			}
+		} catch (error) {
+			console.error(
+				"Error sending offer, rolling back optimistic update:",
+				error
+			);
+			// Rollback
+			messages.value = messages.value.filter((m) => m.id !== tempMessageId);
+		}
+	};
+
+	const respondToOffer = async (
+		offerId: string,
+		status: "accepted" | "declined"
+	) => {
+		await supabase.rpc("respond_to_offer", {
+			p_offer_id: offerId,
+			p_new_status: status,
+		});
+	};
+
+	const loadMore = async (before?: string) => {
+		// a on scroll up, call loadMore(beforeTimestamp) and prepend.
+		const query = supabase
+			.from("messages")
+			.select("*, offers:offer_id(*)")
+			.eq("conversation_id", conversationId)
+			.order("created_at", { ascending: false })
+			.limit(50);
+
+		if (before) {
+			query.lt("created_at", before);
+		}
+
+		const { data, error } = await query;
+		if (error) {
+			console.error("Error loading more messages:", error);
+			return;
+		}
+		messages.value = [...data.reverse(), ...messages.value];
+	};
+
+	const channel = supabase.channel(`chat:${conversationId}`);
+
+	channel
+		.on(
+			"postgres_changes",
+			{
+				event: "INSERT",
+				schema: "public",
+				table: "messages",
+				filter: `conversation_id=eq.${conversationId}`,
+			},
+			async (payload: RealtimePostgresChangesPayload<MessageRow>) => {
+				const newMessage = payload.new as MessageRow;
+
+				// Ignore own messages if using optimistic updates
+				if (newMessage.sender_id === user.value?.id) {
+					return;
+				}
+
+				if (!newMessage?.kind) {
+					return;
+				}
+
+				if (newMessage.kind === "offer" && newMessage.offer_id) {
+					const { data: offer } = await supabase
+						.from("offers")
+						.select("*")
+						.eq("id", newMessage.offer_id)
+						.single();
+					messages.value.push({ ...newMessage, offers: offer });
+				} else {
+					messages.value.push(newMessage);
+				}
+			}
+		)
+		.on(
+			"postgres_changes",
+			{
+				event: "UPDATE",
+				schema: "public",
+				table: "offers",
+				filter: `conversation_id=eq.${conversationId}`,
+			},
+			(payload: RealtimePostgresChangesPayload<OfferRow>) => {
+				const updatedOffer = payload.new as OfferRow;
+				if (!updatedOffer?.id) {
+					return;
+				}
+				messages.value = messages.value.map((m) => {
+					if (m.offer_id === updatedOffer.id) {
+						return { ...m, offers: updatedOffer };
+					}
+					return m;
+				});
+			}
+		)
+		.subscribe((status) => {
+			if (status === "SUBSCRIBED") {
+				// console.log("Successfully subscribed to realtime channel!");
+			}
+		});
+
+	onUnmounted(() => {
+		supabase.removeChannel(channel);
+	});
+
+	return {
+		messages,
+		typing,
+		fetchMessages,
+		sendText,
+		makeOffer,
+		respondToOffer,
+		loadMore,
+	};
+}
