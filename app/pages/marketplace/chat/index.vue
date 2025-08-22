@@ -197,7 +197,7 @@ const filteredEntries = computed(() => {
 
 // Methods
 const navigateToConversation = (conversationId: string) => {
-	navigateTo(`/chat/${conversationId}`);
+	navigateTo(`/marketplace/chat/${conversationId}`);
 };
 
 const getInitials = (name: string | null) => {

@@ -445,7 +445,7 @@ const handleChatWithSeller = async () => {
 
 		if (conversationId) {
 			await router.push(
-				`/chat/${conversationId}?itemId=${item.value.id}&inquire=true`
+				`/marketplace/chat/${conversationId}?itemId=${item.value.id}&inquire=true`
 			);
 		}
 	} catch (err) {
@@ -496,7 +496,7 @@ const handleOfferSubmit = async () => {
 		if (conversationId) {
 			// Navigate to chat page with a special flag to open offer dialog
 			await router.push(
-				`/chat/${conversationId}?itemId=${item.value.id}&action=makeOffer&price=${offerPrice.value}&inquire=true`
+				`/marketplace/chat/${conversationId}?itemId=${item.value.id}&action=makeOffer&price=${offerPrice.value}&inquire=true`
 			);
 		}
 	} catch (err) {

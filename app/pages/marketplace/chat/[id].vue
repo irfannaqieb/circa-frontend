@@ -252,7 +252,7 @@ const filteredEntries = computed(() => {
 // Methods
 const navigateToConversation = (newConversationId: string) => {
 	if (newConversationId !== conversationId.value) {
-		navigateTo(`/chat/${newConversationId}`);
+		navigateTo(`/marketplace/chat/${newConversationId}`);
 	}
 };
 
