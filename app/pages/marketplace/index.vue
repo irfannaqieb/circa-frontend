@@ -32,7 +32,9 @@
 
 					<!-- Quick Filters -->
 					<div class="flex items-center gap-4">
-						<span class="text-sm font-medium text-foreground">Quick Search:</span>
+						<span class="text-sm font-medium text-foreground"
+							>Quick Search:</span
+						>
 						<Button
 							:variant="filters.onlyAvailable ? 'default' : 'outline'"
 							@click="filters.onlyAvailable = !filters.onlyAvailable"
@@ -93,6 +95,8 @@
 				:location="item.location"
 				:images="item.images"
 				:timeAgo="item.timeAgo"
+				:isOwner="item.isOwner"
+				:owner_id="item.owner_id"
 			/>
 		</div>
 		<div v-else class="text-center py-12 text-muted-foreground">
@@ -172,6 +176,7 @@ import {
 } from "~/components/ui/pagination";
 import { useItemsStore } from "~/stores/items.store";
 import { useCategoriesStore } from "~/stores/categories.store";
+import { useSessionStore } from "~/stores/session.store";
 import { storeToRefs } from "pinia";
 import { watchDebounced } from "@vueuse/core";
 import { getImageUrl } from "~/services/items.service";
@@ -194,6 +199,8 @@ const {
 	pageSize,
 } = storeToRefs(itemsStore);
 const { categories } = storeToRefs(categoriesStore);
+const sessionStore = useSessionStore();
+const { user } = storeToRefs(sessionStore);
 
 // Read query parameter from URL
 const route = useRoute();
@@ -218,12 +225,8 @@ onMounted(() => {
 	// Apply initial search query from URL
 	const queryFilters: Partial<ItemsQueryOptions> = {
 		search: searchQuery.value || undefined,
-		transactionType: filters.value.transactionType !== "all" ? filters.value.transactionType : undefined,
-		location: filters.value.location !== "all" ? filters.value.location : undefined,
-		availability: filters.value.availability !== "any" ? filters.value.availability : undefined,
-		priceRange: filters.value.priceRange,
-		onlyAvailable: filters.value.onlyAvailable,
-		onlyFree: filters.value.onlyFree,
+		location:
+			filters.value.location !== "all" ? filters.value.location : undefined,
 	};
 	itemsStore.setFilters(queryFilters);
 });
@@ -253,12 +256,8 @@ watchDebounced(
 	() => {
 		const queryFilters: Partial<ItemsQueryOptions> = {
 			search: searchQuery.value || undefined,
-			transactionType: filters.value.transactionType !== "all" ? filters.value.transactionType : undefined,
-			location: filters.value.location !== "all" ? filters.value.location : undefined,
-			availability: filters.value.availability !== "any" ? filters.value.availability : undefined,
-			priceRange: filters.value.priceRange,
-			onlyAvailable: filters.value.onlyAvailable,
-			onlyFree: filters.value.onlyFree,
+			location:
+				filters.value.location !== "all" ? filters.value.location : undefined,
 		};
 		itemsStore.setFilters(queryFilters);
 	},
@@ -292,6 +291,7 @@ const formattedItems = computed(() => {
 			location: item.location || "N/A",
 			transactionType: item.is_giveaway ? "giveaway" : "sell",
 			priceValue: priceValue,
+			isOwner: !!(user.value && user.value.id === item.owner_id),
 		};
 	});
 

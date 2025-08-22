@@ -4,6 +4,7 @@
 	<LandingWhyUseIt />
 	<LandingTestimonial />
 	<LandingCallToAction />
+	<Footer />
 </template>
 
 <script setup></script>

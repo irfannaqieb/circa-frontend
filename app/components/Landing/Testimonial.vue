@@ -82,9 +82,13 @@
 								<CardContent class="p-6 text-center space-y-4">
 									<!-- University Logo -->
 									<div
-										class="w-16 h-16 mx-auto bg-green-200 rounded-full flex items-center justify-center"
+										class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center p-2 border border-green-200"
 									>
-										<GraduationCap class="w-8 h-8 text-green-600" />
+										<img
+											src="/kodae.png"
+											alt="Korea University"
+											class="w-full h-full object-contain"
+										/>
 									</div>
 
 									<!-- Review -->
@@ -113,7 +117,9 @@
 											<User class="w-6 h-6 text-green-700" />
 										</div>
 										<h4 class="font-semibold text-slate-900">Muhammad Ali</h4>
-										<p class="text-sm text-slate-600">Student at Korea University</p>
+										<p class="text-sm text-slate-600">
+											Student at Korea University
+										</p>
 									</div>
 								</CardContent>
 							</Card>
@@ -146,8 +152,8 @@
 											</div>
 										</div>
 										<p class="text-slate-700 italic leading-relaxed">
-											"I was able to successfully sell my old tech gear without the stress
-											of having to use translation applications"
+											"I was able to successfully sell my old tech gear without
+											the stress of having to use translation applications"
 										</p>
 									</div>
 
@@ -159,7 +165,9 @@
 											<User class="w-6 h-6 text-purple-700" />
 										</div>
 										<h4 class="font-semibold text-slate-900">Amzar Syahmi</h4>
-										<p class="text-sm text-slate-600">Student at Hanyang University</p>
+										<p class="text-sm text-slate-600">
+											Student at Hanyang University
+										</p>
 									</div>
 								</CardContent>
 							</Card>

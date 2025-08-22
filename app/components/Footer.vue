@@ -4,28 +4,16 @@
 			<div class="flex flex-col items-center space-y-4">
 				<!-- Links -->
 				<div class="flex flex-wrap justify-center space-x-6 text-sm">
-					<a
-						href="#"
+					<NuxtLink
+						to="/about"
 						class="text-muted-foreground hover:text-foreground font-medium transition-colors"
-						>About</a
+						>About</NuxtLink
 					>
 					<span class="text-muted-foreground">•</span>
-					<a
-						href="#"
+					<NuxtLink
+						to="/support"
 						class="text-muted-foreground hover:text-foreground font-medium transition-colors"
-						>FAQ</a
-					>
-					<span class="text-muted-foreground">•</span>
-					<a
-						href="#"
-						class="text-muted-foreground hover:text-foreground font-medium transition-colors"
-						>Campus Rules</a
-					>
-					<span class="text-muted-foreground">•</span>
-					<a
-						href="#"
-						class="text-muted-foreground hover:text-foreground font-medium transition-colors"
-						>Contact</a
+						>Contact</NuxtLink
 					>
 				</div>
 			</div>

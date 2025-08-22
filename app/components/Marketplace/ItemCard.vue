@@ -1,6 +1,12 @@
 <template>
 	<Card class="overflow-hidden max-w-sm gap-4">
 		<CardContent class="p-0 relative">
+			<div
+				v-if="isOwner"
+				class="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded-md z-10"
+			>
+				Your listing
+			</div>
 			<Carousel v-if="images && images.length > 0">
 				<CarouselContent>
 					<CarouselItem v-for="(image, index) in images" :key="index">
@@ -24,7 +30,9 @@
 		<CardHeader>
 			<div class="flex justify-between">
 				<div>
-					<CardTitle>{{ title || "Apple Watch" }}</CardTitle>
+					<CardTitle @click="viewDetails" class="cursor-pointer">{{
+						title || "Apple Watch"
+					}}</CardTitle>
 					<p class="text-xs text-muted-foreground">
 						{{ timeAgo || "6 months ago" }}
 					</p>
@@ -46,7 +54,12 @@
 					<Eye class="h-4 w-4" />
 					View details
 				</Button>
-				<Button variant="default">
+				<Button
+					variant="default"
+					@click="startChat"
+					:disabled="isOwner"
+					v-if="!isOwner"
+				>
 					<ShoppingCart class="h-4 w-4" />
 					Buy
 				</Button>
@@ -77,6 +90,7 @@ import {
 import { useRouter } from "vue-router";
 import { useSessionStore } from "~/stores/session.store";
 import { computed } from "vue";
+import { getOrCreateConversation } from "~/services/conversations.service";
 
 const router = useRouter();
 const session = useSessionStore();
@@ -85,6 +99,10 @@ const isLoggedIn = computed(() => !!session.user);
 
 const props = defineProps({
 	id: {
+		type: String,
+		required: true,
+	},
+	owner_id: {
 		type: String,
 		required: true,
 	},
@@ -112,6 +130,10 @@ const props = defineProps({
 		type: String,
 		default: "6 months ago",
 	},
+	isOwner: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 function viewDetails() {
@@ -121,6 +143,32 @@ function viewDetails() {
 		} else {
 			router.push(`/login?redirect=/marketplace/items/${props.id}`);
 		}
+	}
+}
+
+async function startChat() {
+	if (!isLoggedIn.value) {
+		router.push(`/login?redirect=/marketplace/items/${props.id}`);
+		return;
+	}
+
+	if (props.isOwner) {
+		return;
+	}
+
+	const { data: conversationId, error } = await getOrCreateConversation(
+		props.id,
+		props.owner_id
+	);
+
+	if (error) {
+		console.error("Failed to create or get conversation", error);
+		// TODO: show a toast notification
+		return;
+	}
+
+	if (conversationId) {
+		router.push(`/marketplace/chat/${conversationId}`);
 	}
 }
 </script>
