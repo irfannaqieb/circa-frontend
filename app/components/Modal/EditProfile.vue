@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import { toast } from "vue-sonner";
 import {
 	Dialog,
@@ -111,11 +111,34 @@ watch(
 	{ immediate: true, deep: true }
 );
 
-const avatarPreviewUrl = computed(() => {
-	if (avatarFile.value) {
-		return URL.createObjectURL(avatarFile.value);
+const avatarPreviewUrl = ref<string>(profile.value?.photo_url || "");
+
+let lastObjectUrl: string | null = null;
+
+watch(
+	[avatarFile, () => profile.value?.photo_url],
+	([file, url]) => {
+		// Clean up old blob URL
+		if (lastObjectUrl) {
+			URL.revokeObjectURL(lastObjectUrl);
+			lastObjectUrl = null;
+		}
+
+		if (file) {
+			const blobUrl = URL.createObjectURL(file);
+			lastObjectUrl = blobUrl;
+			avatarPreviewUrl.value = blobUrl;
+		} else {
+			avatarPreviewUrl.value = url || "";
+		}
+	},
+	{ immediate: true }
+);
+
+onUnmounted(() => {
+	if (lastObjectUrl) {
+		URL.revokeObjectURL(lastObjectUrl);
 	}
-	return profile.value?.photo_url || "";
 });
 
 const initials = computed(() => {
@@ -187,6 +210,9 @@ async function handleUpdateProfile() {
 		toast.success("Profile updated successfully!");
 		emit("profile-updated", updates);
 		emit("update:modelValue", false);
+
+		avatarFile.value = null;
+		avatarPreviewUrl.value = profile.value?.photo_url || "";
 	}
 
 	loading.value = false;
