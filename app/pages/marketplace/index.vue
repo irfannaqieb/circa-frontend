@@ -177,6 +177,7 @@ import { watchDebounced } from "@vueuse/core";
 import { getImageUrl } from "~/services/items.service";
 import type { ItemsQueryOptions } from "~/stores/items.store";
 import MarketplaceItemFilter from "~/components/Marketplace/ItemFilter.vue";
+import { useRoute } from "vue-router";
 
 definePageMeta({
 	layout: "marketplace",
@@ -194,8 +195,11 @@ const {
 } = storeToRefs(itemsStore);
 const { categories } = storeToRefs(categoriesStore);
 
+// Read query parameter from URL
+const route = useRoute();
+const searchQuery = ref(route.query.query?.toString() || "");
+
 // Filters
-const searchQuery = ref("");
 const filters = ref({
 	transactionType: "all",
 	location: "all",
@@ -211,6 +215,17 @@ const showFilters = ref(false);
 // Fetch initial data
 onMounted(() => {
 	categoriesStore.fetch();
+	// Apply initial search query from URL
+	const queryFilters: Partial<ItemsQueryOptions> = {
+		search: searchQuery.value || undefined,
+		transactionType: filters.value.transactionType !== "all" ? filters.value.transactionType : undefined,
+		location: filters.value.location !== "all" ? filters.value.location : undefined,
+		availability: filters.value.availability !== "any" ? filters.value.availability : undefined,
+		priceRange: filters.value.priceRange,
+		onlyAvailable: filters.value.onlyAvailable,
+		onlyFree: filters.value.onlyFree,
+	};
+	itemsStore.setFilters(queryFilters);
 });
 
 // Toggle filters dropdown
