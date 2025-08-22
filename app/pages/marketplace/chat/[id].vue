@@ -133,15 +133,7 @@
 
 								<!-- Last Message Preview -->
 								<p class="text-sm text-gray-500 truncate mt-1">
-									<span
-										v-if="entry.last_message_kind === 'offer'"
-										class="text-green-600 font-medium"
-									>
-										💰 Offer
-									</span>
-									<span v-else>
-										{{ entry.last_message_body || "No messages yet" }}
-									</span>
+									{{ formatLastMessage(entry) }}
 								</p>
 							</div>
 						</div>
@@ -207,7 +199,10 @@
 import { ref, computed, onMounted, watch } from "vue";
 import ChatWindow from "~/components/chat/ChatWindow.vue";
 import { getConversation } from "~/services/conversations.service";
-import { useConversationsList } from "~/composables/useConversationsList";
+import {
+	useConversationsList,
+	type SidebarEntry,
+} from "~/composables/useConversationsList";
 import { toast } from "vue-sonner";
 
 // Meta
@@ -254,6 +249,25 @@ const navigateToConversation = (newConversationId: string) => {
 	if (newConversationId !== conversationId.value) {
 		navigateTo(`/marketplace/chat/${newConversationId}`);
 	}
+};
+
+const formatLastMessage = (entry: SidebarEntry): string => {
+	if (entry.last_message_kind === "offer") return "💰 Offer";
+	if (!entry.last_message_body) return "No messages yet";
+
+	if (entry.last_message_kind === "system") {
+		if (entry.last_message_body.startsWith("[OFFER_ACCEPTED]")) {
+			return "✅ Offer Accepted";
+		}
+		if (entry.last_message_body.startsWith("[OFFER_DECLINED]")) {
+			return "❌ Offer Declined";
+		}
+		if (entry.last_message_body === "[ITEM_MARKED_SOLD]") {
+			return "📦 Item Sold";
+		}
+	}
+
+	return entry.last_message_body;
 };
 
 const getInitials = (name: string | null) => {

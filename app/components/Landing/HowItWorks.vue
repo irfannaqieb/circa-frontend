@@ -10,9 +10,10 @@
 					</h2>
 					<p class="text-lg text-muted-foreground mb-8 leading-relaxed">
 						If you've ever tried selling your used goods abroad, you'll realize
-						how daunting the process can feel. Not being familiar with the foreign
-						environment is intimidating and results in a myriad of unexplore transactional opportuninites.
-						Circa opens doors through it's simple and intuitive user flow.
+						how daunting the process can feel. Not being familiar with the
+						foreign environment is intimidating and results in a myriad of
+						unexplore transactional opportuninites. Circa opens doors through
+						it's simple and intuitive user flow.
 					</p>
 				</div>
 
@@ -59,12 +60,14 @@
 								>
 									<CalendarCheck class="w-8 h-8 text-green-600" />
 								</div>
-								<CardTitle class="text-xl mb-2">Negotiate and Reserve</CardTitle>
+								<CardTitle class="text-xl mb-2"
+									>Negotiate and Reserve</CardTitle
+								>
 							</CardHeader>
 							<CardContent class="text-center pb-8">
 								<p class="text-muted-foreground">
-									Connect with sellers and offer your compeitive prices. Accept offers
-									and set reservations for your items.
+									Offer your competitive, honest prices. Accept offers and set
+									reservations.
 								</p>
 							</CardContent>
 						</Card>
@@ -88,7 +91,8 @@
 							</CardHeader>
 							<CardContent class="text-center pb-8">
 								<p class="text-muted-foreground">
-									Message to plan your transaction process. Build trust and connectivty amongst community members.
+									Message to plan your transaction process. Build trust and
+									connectivty amongst community members.
 								</p>
 							</CardContent>
 						</Card>

@@ -2,7 +2,7 @@ import { ref, onUnmounted, computed } from "vue";
 import { useSessionStore } from "~/stores/session.store";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
-type MessageKind = "text" | "offer";
+type MessageKind = "text" | "offer" | "system";
 
 export type MessageRow = {
 	id: string;
@@ -311,6 +311,52 @@ export function useChat(conversationId: string, itemId: string) {
 		}
 	};
 
+	const sendSystemMessage = async (body: string) => {
+		if (!user.value) {
+			console.error("❌ Cannot send system message: User not authenticated");
+			return;
+		}
+
+		const tempId = `temp-system-${Date.now()}`;
+		const optimisticMessage: MessageRow = {
+			id: tempId,
+			conversation_id: conversationId,
+			sender_id: user.value.id,
+			kind: "system",
+			body,
+			offer_id: null,
+			created_at: new Date().toISOString(),
+		};
+
+		messages.value.push(optimisticMessage);
+
+		try {
+			const { data, error } = await supabase
+				.from("messages")
+				.insert({
+					conversation_id: conversationId,
+					sender_id: user.value.id,
+					kind: "system",
+					body,
+				})
+				.select()
+				.single();
+
+			if (error) throw error;
+
+			// Reconcile
+			const index = messages.value.findIndex((m) => m.id === tempId);
+			if (index !== -1) {
+				messages.value[index] = data as MessageRow;
+			}
+		} catch (error) {
+			// Rollback
+			messages.value = messages.value.filter((m) => m.id !== tempId);
+			console.error("Error sending system message:", error);
+			throw error; // re-throw to be caught by the component
+		}
+	};
+
 	const markRead = async () => {
 		const { error } = await supabase.rpc("mark_conversation_read", {
 			p_conv: conversationId,
@@ -411,6 +457,7 @@ export function useChat(conversationId: string, itemId: string) {
 		sendInquiryWithText,
 		makeOffer,
 		respondToOffer,
+		sendSystemMessage,
 		markRead,
 		loadMore,
 		subscribeRealtime,

@@ -10,8 +10,8 @@
 					Your trusted community
 				</h2>
 				<p class="text-lg text-muted-foreground max-w-2xl mx-auto">
-					Join fellow Malaysian students secure transactional opportunities and build
-					meaningful connections through our secure sharing platform.
+					Join fellow Malaysian students secure transactional opportunities and
+					build meaningful connections through our sharing platform.
 				</p>
 			</div>
 
@@ -48,7 +48,26 @@
 						Trusted Profiles
 					</h3>
 					<p class="text-muted-foreground">
-						Every lender is a member of a curated student organization that connects Malaysians together
+						Every lender is a member of a curated student organization that
+						connects Malaysians together
+					</p>
+				</Card>
+
+				<!-- Streamlined Selling -->
+				<Card
+					class="text-center p-6 bg-card/70 backdrop-blur-sm border-card/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+				>
+					<div
+						class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center"
+					>
+						<Zap class="w-8 h-8 text-purple-600" />
+					</div>
+					<h3 class="text-xl font-semibold text-foreground mb-3">
+						Streamlined Selling
+					</h3>
+					<p class="text-muted-foreground">
+						Ditch messy Telegram channels and the Instagram hustle of creating
+						multiple posts. List your items in seconds.
 					</p>
 				</Card>
 			</div>
@@ -81,7 +100,7 @@ import { computed } from "vue";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Shield, Users, Award } from "lucide-vue-next";
+import { DollarSign, Shield, Users, Award, Zap } from "lucide-vue-next";
 import { useSessionStore } from "~/stores/session.store";
 
 const session = useSessionStore();
