@@ -38,7 +38,7 @@ export function useChat(conversationId: string, itemId: string) {
 	const fetchInitial = async (limit = 50) => {
 		const { data, error } = await supabase
 			.from("messages")
-			.select("*, offer:offers!messages_offer_id_fkey(*)")
+			.select("*, offers:offers!messages_offer_id_fkey(*)")
 			.eq("conversation_id", conversationId)
 			.order("created_at", { ascending: true })
 			.limit(limit);
@@ -99,6 +99,115 @@ export function useChat(conversationId: string, itemId: string) {
 		}
 	};
 
+	const sendInquiry = async () => {
+		if (!user.value || sending.value) {
+			return;
+		}
+		sending.value = true;
+		try {
+			const { data, error } = await supabase
+				.from("messages")
+				.insert({
+					conversation_id: conversationId,
+					sender_id: user.value.id,
+					kind: "item_inquiry",
+				})
+				.select("*")
+				.single();
+
+			if (error) throw error;
+			// The realtime subscription will add the message to the array
+		} catch (error) {
+			console.error("Error sending inquiry:", error);
+			throw error; // Re-throw to be caught in the component
+		} finally {
+			sending.value = false;
+		}
+	};
+
+	const sendInquiryWithText = async (itemTitle: string) => {
+		if (!user.value || sending.value) {
+			return;
+		}
+		sending.value = true;
+
+		// --- Optimistic Updates ---
+		const tempCardId = `temp-card-${Date.now()}`;
+		const tempTextId = `temp-text-${Date.now()}`;
+		const now = new Date().toISOString();
+
+		const optimisticCardMessage: MessageRow = {
+			id: tempCardId,
+			conversation_id: conversationId,
+			sender_id: user.value.id,
+			kind: "text",
+			body: "[ITEM_CARD_INQUIRY]",
+			offer_id: null,
+			created_at: now,
+		};
+
+		const inquiryText = `I'd like to enquire about ${itemTitle}`;
+		const optimisticTextMessage: MessageRow = {
+			id: tempTextId,
+			conversation_id: conversationId,
+			sender_id: user.value.id,
+			kind: "text",
+			body: inquiryText,
+			offer_id: null,
+			created_at: new Date(new Date(now).getTime() + 1).toISOString(), // Slightly later
+		};
+
+		messages.value.push(optimisticCardMessage, optimisticTextMessage);
+		// --- End Optimistic Updates ---
+
+		try {
+			const { data: cardData, error: cardError } = await supabase
+				.from("messages")
+				.insert({
+					conversation_id: conversationId,
+					sender_id: user.value.id,
+					kind: "text",
+					body: "[ITEM_CARD_INQUIRY]",
+				})
+				.select("*")
+				.single();
+
+			if (cardError) throw cardError;
+
+			const { data: textData, error: textError } = await supabase
+				.from("messages")
+				.insert({
+					conversation_id: conversationId,
+					sender_id: user.value.id,
+					kind: "text",
+					body: inquiryText,
+				})
+				.select("*")
+				.single();
+
+			if (textError) throw textError;
+
+			// Reconcile
+			const cardIndex = messages.value.findIndex((m) => m.id === tempCardId);
+			if (cardIndex !== -1) {
+				messages.value[cardIndex] = cardData as MessageRow;
+			}
+
+			const textIndex = messages.value.findIndex((m) => m.id === tempTextId);
+			if (textIndex !== -1) {
+				messages.value[textIndex] = textData as MessageRow;
+			}
+		} catch (error) {
+			// Rollback
+			messages.value = messages.value.filter(
+				(m) => m.id !== tempCardId && m.id !== tempTextId
+			);
+			throw error;
+		} finally {
+			sending.value = false;
+		}
+	};
+
 	const makeOffer = async (priceKRW: number, expiresAt?: string) => {
 		if (!user.value || sending.value) {
 			console.error(
@@ -119,7 +228,7 @@ export function useChat(conversationId: string, itemId: string) {
 			conversation_id: conversationId,
 			item_id: itemId,
 			maker_id: user.value.id,
-			price_cents: Math.round(priceKRW * 100), // Convert KRW to cents
+			price_cents: Math.round(priceKRW),
 			currency: "KRW",
 			status: "pending",
 			expires_at: expiresAt || null,
@@ -148,7 +257,7 @@ export function useChat(conversationId: string, itemId: string) {
 					conversation_id: conversationId,
 					item_id: itemId,
 					maker_id: user.value.id,
-					price_cents: Math.round(priceKRW * 100), // Convert KRW to cents
+					price_cents: Math.round(priceKRW),
 					expires_at: expiresAt ?? null,
 				})
 				.select("*")
@@ -215,7 +324,7 @@ export function useChat(conversationId: string, itemId: string) {
 	const loadMore = async (beforeISO: string) => {
 		const { data, error } = await supabase
 			.from("messages")
-			.select("*, offer:offers!messages_offer_id_fkey(*)")
+			.select("*, offers:offers!messages_offer_id_fkey(*)")
 			.eq("conversation_id", conversationId)
 			.lt("created_at", beforeISO)
 			.order("created_at", { ascending: false })
@@ -298,6 +407,8 @@ export function useChat(conversationId: string, itemId: string) {
 		fetchInitial,
 		fetchMessages, // Alias for backward compatibility
 		sendText,
+		sendInquiry,
+		sendInquiryWithText,
 		makeOffer,
 		respondToOffer,
 		markRead,
