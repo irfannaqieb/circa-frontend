@@ -139,12 +139,11 @@
 												₩
 											</span>
 											<Input
-												type="number"
+												type="text"
+												inputmode="numeric"
 												placeholder="0"
 												class="pl-8"
-												min="0"
-												step="1000"
-												v-bind="componentField"
+												v-model="priceModel"
 											/>
 										</div>
 									</FormControl>
@@ -432,6 +431,29 @@ const form = useForm({
 		isGiveaway: false,
 		price: undefined,
 		location: "",
+	},
+});
+
+const priceModel = computed({
+	get: () => {
+		const price = form.values.price as string | number | undefined;
+		if (price === undefined || price === null || price === "") return "";
+		const numeric = typeof price === "string" ? parseInt(price, 10) : price;
+		if (Number.isNaN(numeric)) return "";
+		return (numeric as number).toLocaleString();
+	},
+	set: (val: string) => {
+		const digitsOnly = val.replace(/[^0-9]/g, "");
+		if (digitsOnly === "") {
+			form.setFieldValue("price", undefined);
+			return;
+		}
+		const numberVal = parseInt(digitsOnly, 10);
+		if (Number.isNaN(numberVal)) {
+			form.setFieldValue("price", undefined);
+		} else {
+			form.setFieldValue("price", numberVal);
+		}
 	},
 });
 

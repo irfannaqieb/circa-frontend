@@ -1,5 +1,9 @@
 <template>
 	<div v-if="item" class="container mx-auto px-4 py-8">
+		<Button variant="outline" @click="goBack" class="mb-4">
+			<ArrowLeft class="w-4 h-4 mr-2" />
+			Back
+		</Button>
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 			<!-- Media Gallery (Left Column) -->
 			<div class="lg:col-span-2">
@@ -316,6 +320,7 @@ import {
 	MessageCircle,
 	Tag,
 	Share2,
+	ArrowLeft,
 } from "lucide-vue-next";
 import {
 	Breadcrumb,
@@ -419,6 +424,10 @@ const canChat = computed(() => {
 });
 
 // Handler functions
+const goBack = () => {
+	router.back();
+};
+
 const handleChatWithSeller = async () => {
 	if (!currentUser.value || !item.value || !item.value.owner_id) {
 		toast.error("Please log in to chat with the seller.");
