@@ -42,8 +42,10 @@
 
 			<!-- Right side - Action buttons -->
 			<div class="flex items-center space-x-4">
-				<Button variant="outline" size="sm"> Become a seller </Button>
 				<template v-if="!session.isAuthenticated">
+					<Button variant="outline" size="sm" @click="handleBecomeSeller">
+						Become a seller
+					</Button>
 					<Button size="sm" :disabled="session.loading" @click="openLoginModal">
 						{{ session.loading ? "Signing in…" : "Sign in" }}
 					</Button>
@@ -100,10 +102,15 @@
 				</NuxtLink>
 
 				<div class="flex flex-col space-y-2 pt-4">
-					<Button variant="outline" size="sm" class="w-full">
-						Become a seller
-					</Button>
 					<template v-if="!session.isAuthenticated">
+						<Button
+							variant="outline"
+							size="sm"
+							class="w-full"
+							@click="handleBecomeSeller"
+						>
+							Become a seller
+						</Button>
 						<Button
 							size="sm"
 							class="w-full"
@@ -151,6 +158,10 @@ const toggleMobileMenu = () => {
 
 const openLoginModal = () => {
 	isLoginModalOpen.value = true;
+};
+
+const handleBecomeSeller = () => {
+	navigateTo("/login");
 };
 
 const onLoginSuccess = () => {

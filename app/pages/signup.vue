@@ -21,6 +21,42 @@
 				<form @submit.prevent="handleSignUp" class="space-y-4">
 					<div>
 						<div class="relative">
+							<User
+								class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
+							/>
+							<Input
+								v-model="name"
+								type="text"
+								placeholder="Full Name"
+								class="pl-10"
+								required
+								@blur="validate"
+							/>
+						</div>
+						<p v-if="errors.name" class="mt-1 text-sm text-destructive">
+							{{ errors.name[0] }}
+						</p>
+					</div>
+					<div>
+						<div class="relative">
+							<Building2
+								class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
+							/>
+							<Input
+								v-model="campus"
+								type="text"
+								placeholder="University"
+								class="pl-10"
+								required
+								@blur="validate"
+							/>
+						</div>
+						<p v-if="errors.campus" class="mt-1 text-sm text-destructive">
+							{{ errors.campus[0] }}
+						</p>
+					</div>
+					<div>
+						<div class="relative">
 							<Mail
 								class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
 							/>
@@ -124,7 +160,15 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { z } from "zod";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-vue-next";
+import {
+	Mail,
+	Lock,
+	Eye,
+	EyeOff,
+	ArrowLeft,
+	User,
+	Building2,
+} from "lucide-vue-next";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -144,11 +188,18 @@ definePageMeta({
 
 const sessionStore = useSessionStore();
 
+const name = ref("");
+const campus = ref("");
 const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
 const loading = ref(false);
-const errors = ref<{ email?: string[]; password?: string[] }>({});
+const errors = ref<{
+	name?: string[];
+	campus?: string[];
+	email?: string[];
+	password?: string[];
+}>({});
 
 const router = useRouter();
 
@@ -157,6 +208,14 @@ const goBack = () => {
 };
 
 const signupSchema = z.object({
+	name: z
+		.string()
+		.trim()
+		.min(2, { message: "Name must be at least 2 characters long." }),
+	campus: z
+		.string()
+		.trim()
+		.min(2, { message: "University must be at least 2 characters long." }),
 	email: z
 		.string()
 		.trim()
@@ -169,6 +228,8 @@ const signupSchema = z.object({
 
 const validate = () => {
 	const result = signupSchema.safeParse({
+		name: name.value,
+		campus: campus.value,
 		email: email.value,
 		password: password.value,
 	});
@@ -188,7 +249,11 @@ const handleSignUp = async () => {
 	loading.value = true;
 	const { ok, error } = await sessionStore.signUpWithPassword(
 		email.value,
-		password.value
+		password.value,
+		{
+			display_name: name.value,
+			campus: campus.value,
+		}
 	);
 	loading.value = false;
 
