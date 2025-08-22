@@ -17,12 +17,12 @@
 		<NuxtLink to="/marketplace" class="text-lg font-semibold text-muted-foreground mt-6 mb-2 hover:text-primary transition-colors">
 			Marketplace
 		</NuxtLink>
-		<NuxtLink to="/marketplace/item" class="mb-2">
-			<Button variant="outline" class="justify-start shadow-md">
+		<Button asChild variant="outline" class="mb-2 justify-start shadow-md">
+			<NuxtLink to="/marketplace/item">
 				<Plus class="w-4 h-4" />
 				Add Item
-			</Button>
-		</NuxtLink>
+			</NuxtLink>
+		</Button>
 		<ul>
 			<li class="mt-2">
 				<NuxtLink
@@ -50,12 +50,19 @@
 			Categories
 		</h1>
 		<ul>
-			<li v-for="category in categories" :key="category.name" class="mt-2">
+			<li
+				v-for="category in categories"
+				:key="category.id ?? category.slug"
+				class="mt-2"
+			>
 				<NuxtLink
-					:to="`/marketplace/category/${category.slug}`"
+					:to="`/marketplace/category/${encodeURIComponent(category.slug)}`"
 					class="flex items-center text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md p-2 transition-colors"
 				>
-					<component :is="ICONS[category.icon_key]" class="w-5 h-5 mr-3" />
+					<component
+						:is="resolveIcon(category.icon_key)"
+						class="w-5 h-5 mr-3"
+					/>
 					<span>{{ category.name }}</span>
 				</NuxtLink>
 			</li>
@@ -100,4 +107,8 @@ const categoriesStore = useCategoriesStore();
 categoriesStore.fetch();
 
 const { categories } = storeToRefs(categoriesStore);
+
+const resolveIcon = (key?: string): Component => {
+	return ICONS[key as keyof typeof ICONS] ?? Ellipsis;
+};
 </script>

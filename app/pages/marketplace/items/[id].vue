@@ -134,19 +134,34 @@
 						</div>
 					</div>
 					<Button
+						v-if="!isOwner"
 						size="lg"
 						class="w-full mb-2"
-						:disabled="item.status !== 'Available'"
+						:disabled="!canChat || chatLoading"
+						@click="handleBuyNow"
 					>
-						<span v-if="item.is_giveaway">Claim Giveaway</span>
+						<span v-if="chatLoading">Starting conversation...</span>
+						<span v-else-if="item.is_giveaway">Claim Giveaway</span>
 						<span v-else>Buy Now</span>
 					</Button>
-					<div class="grid grid-cols-2 gap-2">
-						<Button variant="secondary">
-							<MessageCircle class="w-4 h-4 mr-2" /> Chat with Seller
+					<div v-if="!isOwner" class="grid grid-cols-2 gap-2">
+						<Button
+							variant="secondary"
+							:disabled="!canChat || chatLoading"
+							@click="handleChatWithSeller"
+						>
+							<MessageCircle class="w-4 h-4 mr-2" />
+							<span v-if="chatLoading">Starting...</span>
+							<span v-else>Chat with Seller</span>
 						</Button>
-						<Button variant="secondary">
-							<Tag class="w-4 h-4 mr-2" /> Make Offer
+						<Button
+							variant="secondary"
+							:disabled="!canChat || chatLoading || item.is_giveaway"
+							@click="handleMakeOffer"
+						>
+							<Tag class="w-4 h-4 mr-2" />
+							<span v-if="chatLoading">Starting...</span>
+							<span v-else>Make Offer</span>
 						</Button>
 						<Button variant="secondary">
 							<Heart class="w-4 h-4 mr-2" /> Save
@@ -154,6 +169,10 @@
 						<Button variant="secondary">
 							<Share2 class="w-4 h-4 mr-2" /> Share
 						</Button>
+					</div>
+					<div v-else class="text-center py-4">
+						<p class="text-muted-foreground">This is your listing</p>
+						<Button variant="outline" class="mt-2"> Edit Listing </Button>
 					</div>
 				</div>
 
@@ -267,6 +286,8 @@ import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { getProfileById, type Profile } from "~/services/profiles.service";
+import { getOrCreateConversation } from "~/services/conversations.service";
+import { useSessionStore } from "~/stores/session.store";
 
 // Helper functions
 function formatPrice(
@@ -290,6 +311,9 @@ function formatDate(dateString: string | undefined): string {
 }
 
 const route = useRoute();
+const sessionStore = useSessionStore();
+const router = useRouter();
+
 const item = ref<
 	| (Item & {
 			images?: ItemImage[];
@@ -302,6 +326,110 @@ const loading = ref(true);
 const sellerProfile = ref<Profile | null>(null);
 
 const selectedImage = ref<ItemImage | null>(null);
+
+// Chat functionality
+const chatLoading = ref(false);
+
+const currentUser = computed(() => sessionStore.session?.user);
+
+const isOwner = computed(() => {
+	return currentUser.value?.id === item.value?.owner_id;
+});
+
+const canChat = computed(() => {
+	return (
+		currentUser.value &&
+		item.value &&
+		!isOwner.value &&
+		item.value.status === "Available"
+	);
+});
+
+// Handler functions
+const handleChatWithSeller = async () => {
+	if (!currentUser.value || !item.value || !item.value.owner_id) {
+		toast.error("Please log in to chat with the seller.");
+		return;
+	}
+
+	if (isOwner.value) {
+		toast.error("You cannot chat with yourself.");
+		return;
+	}
+
+	chatLoading.value = true;
+	try {
+		const { data: conversationId, error } = await getOrCreateConversation(
+			item.value.id,
+			item.value.owner_id
+		);
+
+		if (error) {
+			if (error.message?.includes("self")) {
+				toast.error("You cannot start a conversation with yourself.");
+			} else {
+				toast.error("Failed to start conversation. Please try again.");
+			}
+			return;
+		}
+
+		if (conversationId) {
+			await router.push(`/chat/${conversationId}?itemId=${item.value.id}`);
+		}
+	} catch (err) {
+		console.error("Error starting chat:", err);
+		toast.error("An unexpected error occurred. Please try again.");
+	} finally {
+		chatLoading.value = false;
+	}
+};
+
+const handleBuyNow = async () => {
+	// For now, this will start a conversation.
+	// In a real app, this might go to a checkout flow.
+	await handleChatWithSeller();
+};
+
+const handleMakeOffer = async () => {
+	if (!currentUser.value || !item.value || !item.value.owner_id) {
+		toast.error("Please log in to make an offer.");
+		return;
+	}
+
+	if (isOwner.value) {
+		toast.error("You cannot make an offer on your own item.");
+		return;
+	}
+
+	chatLoading.value = true;
+	try {
+		const { data: conversationId, error } = await getOrCreateConversation(
+			item.value.id,
+			item.value.owner_id
+		);
+
+		if (error) {
+			if (error.message?.includes("self")) {
+				toast.error("You cannot start a conversation with yourself.");
+			} else {
+				toast.error("Failed to start conversation. Please try again.");
+			}
+			return;
+		}
+
+		if (conversationId) {
+			// Navigate to chat page with a special flag to open offer dialog
+			await router.push(
+				`/chat/${conversationId}?itemId=${item.value.id}&openOffer=true`
+			);
+		}
+	} catch (err) {
+		console.error("Error starting chat for offer:", err);
+		toast.error("An unexpected error occurred. Please try again.");
+	} finally {
+		chatLoading.value = false;
+	}
+};
 
 watch(
 	() => item.value?.images,
