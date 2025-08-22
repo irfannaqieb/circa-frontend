@@ -112,8 +112,8 @@
 										>
 											<User class="w-6 h-6 text-green-700" />
 										</div>
-										<h4 class="font-semibold text-slate-900">Marcus Johnson</h4>
-										<p class="text-sm text-slate-600">Student at MIT</p>
+										<h4 class="font-semibold text-slate-900">Muhammad Ali</h4>
+										<p class="text-sm text-slate-600">Student at Korea University</p>
 									</div>
 								</CardContent>
 							</Card>
@@ -127,7 +127,11 @@
 									<div
 										class="w-16 h-16 mx-auto bg-purple-200 rounded-full flex items-center justify-center"
 									>
-										<GraduationCap class="w-8 h-8 text-purple-600" />
+										<img
+											src="/hanyang-logo.png"
+											alt="Hanyang University"
+											class="w-full h-full object-contain"
+										/>
 									</div>
 
 									<!-- Review -->
@@ -142,9 +146,8 @@
 											</div>
 										</div>
 										<p class="text-slate-700 italic leading-relaxed">
-											"Perfect for broke college students! I've borrowed camping
-											gear, kitchen appliances, and even formal wear. Highly
-											recommend!"
+											"I was able to successfully sell my old tech gear without the stress
+											of having to use translation applications"
 										</p>
 									</div>
 
@@ -155,8 +158,8 @@
 										>
 											<User class="w-6 h-6 text-purple-700" />
 										</div>
-										<h4 class="font-semibold text-slate-900">Emma Rodriguez</h4>
-										<p class="text-sm text-slate-600">Student at UC Berkeley</p>
+										<h4 class="font-semibold text-slate-900">Amzar Syahmi</h4>
+										<p class="text-sm text-slate-600">Student at Hanyang University</p>
 									</div>
 								</CardContent>
 							</Card>

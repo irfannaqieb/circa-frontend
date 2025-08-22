@@ -6,20 +6,14 @@
 				<div class="lg:order-2">
 					<Badge variant="secondary" class="mb-6"> How It Works </Badge>
 					<h2 class="text-3xl md:text-4xl font-bold text-foreground mb-6">
-						Get started with our simple and intuitive process
+						Stress free used-goods market
 					</h2>
 					<p class="text-lg text-muted-foreground mb-8 leading-relaxed">
-						Join other members who are already sharing, lending, and borrowing
-						items. Build meaningful connections while saving money and reducing
-						waste. Our platform makes it safe, simple, and rewarding to
-						participate in the sharing economy.
+						If you've ever tried selling your used goods abroad, you'll realize
+						how daunting the process can feel. Not being familiar with the foreign
+						environment is intimidating and results in a myriad of unexplore transactional opportuninites.
+						Circa opens doors through it's simple and intuitive user flow.
 					</p>
-					<Button
-						class="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
-						@click="handleTryNow"
-					>
-						Try Now
-					</Button>
 				</div>
 
 				<!-- Steps Cards on the Left -->
@@ -44,8 +38,8 @@
 							</CardHeader>
 							<CardContent class="text-center pb-8">
 								<p class="text-muted-foreground">
-									Post something to lend, or search what you need. Browse
-									through items in your community.
+									Post something yourself, or search what you need. Browse
+									through items by the community.
 								</p>
 							</CardContent>
 						</Card>
@@ -65,12 +59,12 @@
 								>
 									<CalendarCheck class="w-8 h-8 text-green-600" />
 								</div>
-								<CardTitle class="text-xl mb-2">Reserve</CardTitle>
+								<CardTitle class="text-xl mb-2">Negotiate and Reserve</CardTitle>
 							</CardHeader>
 							<CardContent class="text-center pb-8">
 								<p class="text-muted-foreground">
-									Pick your date, get instant confirmation. Schedule when works
-									best for both parties.
+									Connect with sellers and offer your compeitive prices. Accept offers
+									and set reservations for your items.
 								</p>
 							</CardContent>
 						</Card>
@@ -94,8 +88,7 @@
 							</CardHeader>
 							<CardContent class="text-center pb-8">
 								<p class="text-muted-foreground">
-									Handshake code confirms pickup and earn points. Build trust
-									within your community.
+									Message to plan your transaction process. Build trust and connectivty amongst community members.
 								</p>
 							</CardContent>
 						</Card>
