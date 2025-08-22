@@ -175,7 +175,7 @@
 									<div class="grid gap-2">
 										<div class="flex items-center gap-2 pt-2">
 											<Slider
-												:default-value="[item.base_price_minor || 50000]"
+												v-model="sliderValue"
 												:max="
 													item.base_price_minor
 														? item.base_price_minor * 2
@@ -183,7 +183,6 @@
 												"
 												:step="1000"
 												class="w-full"
-												@value-change="handleSliderChange"
 											/>
 										</div>
 										<div class="text-center font-semibold text-lg">
@@ -392,6 +391,15 @@ const offerPriceModel = computed({
 	},
 });
 
+const sliderValue = computed({
+	get: () => [offerPrice.value ?? item.value?.base_price_minor ?? 0],
+	set: (val: number[]) => {
+		if (val.length > 0 && val[0] !== undefined) {
+			offerPrice.value = val[0];
+		}
+	},
+});
+
 // Chat functionality
 const chatLoading = ref(false);
 
@@ -411,11 +419,6 @@ const canChat = computed(() => {
 });
 
 // Handler functions
-const handleSliderChange = (value: number[]) => {
-	const firstValue = value[0];
-	offerPrice.value = firstValue !== undefined ? firstValue : null;
-};
-
 const handleChatWithSeller = async () => {
 	if (!currentUser.value || !item.value || !item.value.owner_id) {
 		toast.error("Please log in to chat with the seller.");
@@ -555,6 +558,7 @@ onMounted(async () => {
 			} else {
 				item.value.images = imageData || [];
 			}
+			offerPrice.value = item.value.base_price_minor ?? null;
 
 			// Fetch seller profile using owner_id
 			if (item.value?.owner_id) {

@@ -62,7 +62,7 @@
 						<Users class="w-8 h-8 text-purple-600" />
 					</div>
 					<h3 class="text-xl font-semibold text-foreground mb-3">
-						Malaysians-specific
+						Malaysian-Only
 					</h3>
 					<p class="text-muted-foreground">
 						Every vendor is a member of a curated student organization that
