@@ -128,7 +128,7 @@
 										class="w-16 h-16 mx-auto bg-purple-200 rounded-full flex items-center justify-center"
 									>
 										<img
-											src="/hanyang-logo.png"
+											src="/hanyang logo.png"
 											alt="Hanyang University"
 											class="w-full h-full object-contain"
 										/>
