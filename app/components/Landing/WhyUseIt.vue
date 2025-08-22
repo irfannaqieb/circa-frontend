@@ -48,9 +48,43 @@
 						Trusted Profiles
 					</h3>
 					<p class="text-muted-foreground">
-						Every lender is a member of a curated student organization that connects Malaysians together
+						Invite-only approved members ensure legitimacy and consistency.
 					</p>
 				</Card>
+
+				<!-- Campus-Only -->
+				<Card
+					class="text-center p-6 bg-card/70 backdrop-blur-sm border-card/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+				>
+					<div
+						class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center"
+					>
+						<Users class="w-8 h-8 text-purple-600" />
+					</div>
+					<h3 class="text-xl font-semibold text-foreground mb-3">
+						Malaysians-specific
+					</h3>
+					<p class="text-muted-foreground">
+						Every vendor is a member of a curated student organization that connects Malaysians together
+					</p>
+				</Card>
+
+				<!-- Sustainability Points -->
+				<Card
+					class="text-center p-6 bg-card/70 backdrop-blur-sm border-card/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+				>
+					<div
+						class="w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-full flex items-center justify-center"
+					>
+						<Award class="w-8 h-8 text-yellow-600" />
+					</div>
+					<h3 class="text-xl font-semibold text-foreground mb-3">
+						Vendor reviews
+					</h3>
+					<p class="text-muted-foreground">
+						Ensure potential customers or sellers are reliable and build a reputation within the community
+					</p>
+				</Card>				
 			</div>
 
 			<!-- Trust Indicators -->
