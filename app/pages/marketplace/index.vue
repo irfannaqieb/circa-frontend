@@ -11,50 +11,57 @@
 		<div class="my-8">
 			<div class="bg-card rounded-xl shadow-sm border border-border p-6">
 				<div class="space-y-4">
-					<!-- Search Input -->
-					<div class="relative">
-						<Input
-							v-model="searchQuery"
-							placeholder="Search for items..."
-							class="w-full"
-						/>
+					<!-- Search Input and Filter Buttons -->
+					<div class="flex flex-col sm:flex-row gap-4 items-center">
+						<div class="relative flex-1 w-full">
+							<Input
+								v-model="searchQuery"
+								placeholder="Search for items..."
+								class="w-full"
+							/>
+						</div>
+						<div class="flex gap-2">
+							<Button
+								@click="toggleFilters"
+								class="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+							>
+								Filters
+							</Button>
+						</div>
 					</div>
 
-					<!-- Filter Dropdowns -->
-					<div class="flex flex-col sm:flex-row gap-4 justify-center">
-						<Select v-model="selectedCategory" class="w-full sm:w-[200px]">
-							<SelectTrigger>
-								<SelectValue placeholder="Categories" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">All Categories</SelectItem>
-								<SelectItem
-									v-for="category in categories"
-									:key="category.id"
-									:value="category.slug"
-								>
-									{{ category.name }}
-								</SelectItem>
-							</SelectContent>
-						</Select>
-
-						<Select v-model="selectedLocation" class="w-full sm:w-[200px]">
-							<SelectTrigger>
-								<SelectValue placeholder="Location" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">All Locations</SelectItem>
-								<SelectItem value="Sinchon">Sinchon</SelectItem>
-								<SelectItem value="Yonsei">Yonsei</SelectItem>
-								<SelectItem value="Hongdae">Hongdae</SelectItem>
-							</SelectContent>
-						</Select>
-
+					<!-- Quick Filters -->
+					<div class="flex items-center gap-4">
+						<span class="text-sm font-medium text-foreground">Quick Search:</span>
 						<Button
-							class="bg-primary text-primary-foreground px-8 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors w-full sm:w-auto"
+							:variant="filters.onlyAvailable ? 'default' : 'outline'"
+							@click="filters.onlyAvailable = !filters.onlyAvailable"
+							class="px-4 py-2 rounded-lg font-medium"
 						>
-							Search
+							Available Only
 						</Button>
+						<Button
+							:variant="filters.onlyFree ? 'default' : 'outline'"
+							@click="filters.onlyFree = !filters.onlyFree"
+							class="px-4 py-2 rounded-lg font-medium"
+						>
+							Free Items
+						</Button>
+						<span class="text-sm text-muted-foreground">
+							{{ formattedItems.length }} items found
+						</span>
+					</div>
+
+					<!-- Filter Dropdown -->
+					<div
+						v-if="showFilters"
+						class="absolute z-10 bg-card rounded-xl shadow-sm border border-border p-6 mt-2 w-full sm:w-[400px] right-0 sm:right-6"
+					>
+						<MarketplaceItemFilter
+							:total-items="formattedItems.length"
+							v-model="filters"
+							:hide-quick-filters="true"
+						/>
 					</div>
 				</div>
 			</div>
@@ -154,16 +161,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { ListFilter, ArrowUpDown } from "lucide-vue-next";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "~/components/ui/select";
 import {
 	Pagination,
 	PaginationContent,
@@ -177,6 +176,7 @@ import { storeToRefs } from "pinia";
 import { watchDebounced } from "@vueuse/core";
 import { getImageUrl } from "~/services/items.service";
 import type { ItemsQueryOptions } from "~/stores/items.store";
+import MarketplaceItemFilter from "~/components/Marketplace/ItemFilter.vue";
 
 definePageMeta({
 	layout: "marketplace",
@@ -196,28 +196,56 @@ const { categories } = storeToRefs(categoriesStore);
 
 // Filters
 const searchQuery = ref("");
-const selectedCategory = ref("all");
-const selectedLocation = ref("all");
+const filters = ref({
+	transactionType: "all",
+	location: "all",
+	availability: "any",
+	priceRange: [0, 10000000] as [number, number],
+	onlyAvailable: false,
+	onlyFree: false,
+});
+
+// Dropdown state
+const showFilters = ref(false);
 
 // Fetch initial data
 onMounted(() => {
 	categoriesStore.fetch();
 });
 
+// Toggle filters dropdown
+function toggleFilters() {
+	showFilters.value = !showFilters.value;
+}
+
+// Clear all filters
+function clearFilters() {
+	filters.value = {
+		transactionType: "all",
+		location: "all",
+		availability: "any",
+		priceRange: [0, 10000000],
+		onlyAvailable: false,
+		onlyFree: false,
+	};
+	searchQuery.value = "";
+	showFilters.value = false; // Close dropdown after clearing
+}
+
 // Watch for filter changes
 watchDebounced(
-	[searchQuery, selectedCategory, selectedLocation],
+	[searchQuery, filters],
 	() => {
-		const filters: Partial<ItemsQueryOptions> = {
+		const queryFilters: Partial<ItemsQueryOptions> = {
 			search: searchQuery.value || undefined,
-			categoryId:
-				selectedCategory.value !== "all"
-					? categories.value.find((c) => c.slug === selectedCategory.value)?.id
-					: undefined,
-			location:
-				selectedLocation.value !== "all" ? selectedLocation.value : undefined,
+			transactionType: filters.value.transactionType !== "all" ? filters.value.transactionType : undefined,
+			location: filters.value.location !== "all" ? filters.value.location : undefined,
+			availability: filters.value.availability !== "any" ? filters.value.availability : undefined,
+			priceRange: filters.value.priceRange,
+			onlyAvailable: filters.value.onlyAvailable,
+			onlyFree: filters.value.onlyFree,
 		};
-		itemsStore.setFilters(filters);
+		itemsStore.setFilters(queryFilters);
 	},
 	{ debounce: 300, immediate: true }
 );
@@ -229,8 +257,8 @@ const endItem = computed(() =>
 	Math.min(currentPage.value * pageSize.value, totalItems.value)
 );
 
-const formattedItems = computed(() =>
-	items.value.map((item) => {
+const formattedItems = computed(() => {
+	let formatted = items.value.map((item) => {
 		const priceValue = item.is_giveaway ? 0 : item.base_price_minor || 0;
 		const images =
 			Array.isArray(item.images) && item.images.length > 0
@@ -247,13 +275,30 @@ const formattedItems = computed(() =>
 			images,
 			status: item.status || "Available",
 			location: item.location || "N/A",
+			transactionType: item.is_giveaway ? "giveaway" : "sell",
+			priceValue: priceValue,
 		};
-	})
-);
+	});
+
+	// Apply quick filters locally
+	if (filters.value.onlyAvailable) {
+		formatted = formatted.filter((item) => item.status === "Available");
+	}
+	if (filters.value.onlyFree) {
+		formatted = formatted.filter((item) => item.transactionType === "giveaway");
+	}
+
+	return formatted;
+});
 
 function handlePageChange(page: number) {
 	itemsStore.setPage(page);
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+/* Ensure dropdown is positioned correctly */
+.absolute {
+	position: absolute;
+}
+</style>
