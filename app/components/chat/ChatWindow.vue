@@ -1,18 +1,29 @@
 <template>
-	<div
-		class="flex flex-col h-[calc(100vh-8rem)] w-full max-w-4xl mx-auto border rounded-lg"
-	>
+	<div class="flex flex-col h-full w-full">
 		<!-- Header -->
-		<div class="p-4 border-b">
-			<h2 class="text-xl font-bold">Chat</h2>
+		<div class="p-4 border-b flex items-center gap-4">
+			<template v-if="peer">
+				<Avatar>
+					<AvatarImage :src="peer.peer_avatar ?? ''" :alt="peer.peer_name" />
+					<AvatarFallback>
+						{{
+							peer.peer_name
+								?.split(" ")
+								.map((n) => n[0])
+								.join("")
+						}}
+					</AvatarFallback>
+				</Avatar>
+				<h2 class="text-xl font-bold">{{ peer.peer_name }}</h2>
+			</template>
+			<template v-else>
+				<h2 class="text-xl font-bold">Chat</h2>
+			</template>
 			<!-- Placeholder for item/user info -->
 		</div>
 
 		<!-- Message List -->
-		<div
-			ref="chatContainer"
-			class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 dark:bg-gray-900"
-		>
+		<div ref="chatContainer" class="flex-1 p-4 overflow-y-auto space-y-4">
 			<div
 				v-for="message in messages"
 				:key="message.id"
@@ -108,9 +119,15 @@
 					<Input
 						v-model="newMessage"
 						placeholder="Type a message..."
+						:disabled="sending"
 						@keyup.enter="handleSendText"
 					/>
-					<Button @click="handleSendText"> Send </Button>
+					<Button
+						@click="handleSendText"
+						:disabled="sending || !newMessage.trim()"
+					>
+						{{ sending ? "Sending..." : "Send" }}
+					</Button>
 				</div>
 				<!-- Offer Input -->
 				<div class="flex items-center gap-2">
@@ -119,8 +136,14 @@
 						type="number"
 						placeholder="Make an offer (KRW)"
 						class="w-1/2"
+						:disabled="sending"
 					/>
-					<Button @click="handleMakeOffer"> Make Offer </Button>
+					<Button
+						@click="handleMakeOffer"
+						:disabled="sending || !newOfferPrice"
+					>
+						{{ sending ? "Making..." : "Make Offer" }}
+					</Button>
 				</div>
 			</div>
 			<div v-else>
@@ -134,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick, watch } from "vue";
+import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
 import { useChat, type MessageRow, type OfferRow } from "~/composables/useChat";
 import { useSessionStore } from "~/stores/session.store";
 import { Button } from "@/components/ui/button";
@@ -149,20 +172,25 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "vue-sonner";
+import type { ConversationEntry } from "~/composables/useConversationsList";
 
 const props = defineProps<{
 	conversationId: string;
 	itemId: string;
+	peer?: ConversationEntry;
 }>();
 
 const {
 	messages,
-	typing,
-	fetchMessages,
+	sending,
+	fetchInitial,
 	sendText,
 	makeOffer,
 	respondToOffer,
+	markRead,
 	loadMore,
+	subscribeRealtime,
+	unsubscribe,
 } = useChat(props.conversationId, props.itemId);
 const sessionStore = useSessionStore();
 const user = computed(() => sessionStore.session?.user);
@@ -191,7 +219,9 @@ const scrollToBottom = () => {
 };
 
 onMounted(async () => {
-	await fetchMessages();
+	await fetchInitial();
+	await markRead();
+	subscribeRealtime();
 	scrollToBottom();
 
 	// Check if we should auto-focus the offer input
@@ -209,6 +239,10 @@ onMounted(async () => {
 	}
 });
 
+onUnmounted(() => {
+	unsubscribe();
+});
+
 watch(
 	messages,
 	() => {
@@ -218,7 +252,7 @@ watch(
 );
 
 const handleSendText = async () => {
-	if (newMessage.value.trim() && user.value) {
+	if (newMessage.value.trim() && user.value && !sending.value) {
 		try {
 			await sendText(newMessage.value.trim());
 			newMessage.value = "";
@@ -230,7 +264,12 @@ const handleSendText = async () => {
 };
 
 const handleMakeOffer = async () => {
-	if (newOfferPrice.value && newOfferPrice.value > 0 && user.value) {
+	if (
+		newOfferPrice.value &&
+		newOfferPrice.value > 0 &&
+		user.value &&
+		!sending.value
+	) {
 		try {
 			await makeOffer(newOfferPrice.value);
 			newOfferPrice.value = null;
@@ -245,6 +284,12 @@ const handleRespondToOffer = async (
 	offerId: string,
 	status: "accepted" | "declined"
 ) => {
-	await respondToOffer(offerId, status);
+	try {
+		await respondToOffer(offerId, status);
+		toast.success(`Offer ${status}`);
+	} catch (error) {
+		console.error("Failed to respond to offer:", error);
+		toast.error("Failed to respond to offer");
+	}
 };
 </script>

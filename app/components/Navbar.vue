@@ -25,6 +25,13 @@
 				>
 					Marketplace
 				</NuxtLink>
+				<NuxtLink
+					v-if="session.isAuthenticated"
+					to="/chat"
+					class="text-muted-foreground hover:text-foreground font-medium transition-colors"
+				>
+					Messages
+				</NuxtLink>
 				<!-- <NuxtLink
 					to="/about"
 					class="text-muted-foreground hover:text-foreground font-medium transition-colors"
@@ -92,16 +99,17 @@
 					Home
 				</NuxtLink>
 				<NuxtLink
-					to="/about"
+					to="/marketplace"
 					class="text-muted-foreground hover:text-foreground font-medium"
 				>
-					About
+					Marketplace
 				</NuxtLink>
 				<NuxtLink
-					to="/contact"
+					v-if="session.isAuthenticated"
+					to="/chat"
 					class="text-muted-foreground hover:text-foreground font-medium"
 				>
-					Contact
+					Messages
 				</NuxtLink>
 				<div class="flex flex-col space-y-2 pt-4">
 					<Button variant="outline" size="sm" class="w-full">

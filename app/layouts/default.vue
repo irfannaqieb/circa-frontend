@@ -1,10 +1,9 @@
 <template>
-	<div class="min-h-dvh flex flex-col">
+	<div class="h-dvh flex flex-col">
 		<Navbar />
-		<main class="flex-1">
+		<main class="flex-1 overflow-y-auto">
 			<NuxtPage />
 		</main>
-		<Footer />
 	</div>
 </template>
 
