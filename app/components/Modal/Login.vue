@@ -143,6 +143,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSessionStore } from "@/stores/session.store";
+import { toast } from "vue-sonner";
 // Using simple alerts for now - can be replaced with toast library later
 
 interface Props {
@@ -198,12 +199,15 @@ const toggleMode = () => {
 const onSubmit = async (values: any) => {
 	try {
 		const result = isSignUp.value
-			? await session.signUpWithPassword(values.email, values.password)
+			? await session.signUpWithPassword(values.email, values.password, {
+					display_name: values.email.split("@")[0],
+					campus: "N/A",
+			  })
 			: await session.signInWithPassword(values.email, values.password);
 
 		if (result.ok) {
 			if (process.client) {
-				alert(
+				toast.success(
 					isSignUp.value
 						? "Account created. Check your email to confirm if required."
 						: "Signed in successfully."
@@ -213,7 +217,7 @@ const onSubmit = async (values: any) => {
 			emit("success");
 		} else {
 			if (process.client) {
-				alert(
+				toast.error(
 					session.error ||
 						(isSignUp.value ? "Failed to create account" : "Failed to sign in")
 				);
@@ -222,7 +226,7 @@ const onSubmit = async (values: any) => {
 	} catch (error) {
 		console.error("Auth error:", error);
 		if (process.client) {
-			alert("An unexpected error occurred");
+			toast.error("An unexpected error occurred");
 		}
 	}
 };
@@ -237,7 +241,7 @@ const onOAuth = async (provider: "google" | "github") => {
 				error: (result as any)?.error,
 			});
 			if (process.client) {
-				alert("Unable to start OAuth sign-in, please try again");
+				toast.error("Unable to start OAuth sign-in, please try again");
 			}
 			isOauthRedirecting.value = false;
 		}
@@ -245,7 +249,7 @@ const onOAuth = async (provider: "google" | "github") => {
 	} catch (error) {
 		console.error("OAuth sign-in initiation threw", { provider, error });
 		if (process.client) {
-			alert("Unable to start OAuth sign-in, please try again");
+			toast.error("Unable to start OAuth sign-in, please try again");
 		}
 		isOauthRedirecting.value = false;
 	}
