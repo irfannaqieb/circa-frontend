@@ -93,6 +93,7 @@ export const useSessionStore = defineStore("session", {
 		async signUpWithPassword(
 			email: string,
 			password: string,
+			metadata: { display_name: string; campus: string },
 			redirectTo?: string
 		) {
 			const { $supabase } = useNuxtApp();
@@ -107,7 +108,7 @@ export const useSessionStore = defineStore("session", {
 				const { data, error } = await $supabase.auth.signUp({
 					email,
 					password,
-					options: { emailRedirectTo: callback },
+					options: { emailRedirectTo: callback, data: metadata },
 				});
 				if (error) throw error;
 				this.session = data.session ?? null;
@@ -159,11 +160,11 @@ export const useSessionStore = defineStore("session", {
 			try {
 				const { error } = await $supabase.auth.signOut();
 				if (error) throw error;
-				this.session = null;
-				this.user = null;
 			} catch (err: any) {
 				this.error = err?.message ?? "Logout failed";
 			} finally {
+				this.session = null;
+				this.user = null;
 				this.loading = false;
 			}
 		},
