@@ -56,10 +56,16 @@
 				</p>
 				<a
 					href="mailto:irfannaqieb@gmail.com"
-					class="mt-4 inline-block text-blue-500 underline hover:text-blue-600"
+					class="mt-4 block text-blue-500 underline hover:text-blue-600"
 				>
 					irfannaqieb@gmail.com
 				</a>
+				<a
+					href="mailtu:contact@somezarz.dev"
+					class="mt-4 block text-blue-500 underline hover:text-blue-600"
+				>
+					contact@somezarz.dev
+				</a>	
 			</div>
 		</div>
 
